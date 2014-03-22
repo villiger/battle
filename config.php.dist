@@ -1,0 +1,7 @@
+<?php
+
+const DEBUG = true;
+
+const DB_PATH = "mysql:host=localhost;dbname=battle";
+const DB_USER = "root";
+const DB_PASS = "";

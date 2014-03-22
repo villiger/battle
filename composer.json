@@ -1,6 +1,7 @@
 {
     "require": {
         "slim/slim": "2.*",
-        "petebrowne/slim-layout-view": "0.3.*"
+        "petebrowne/slim-layout-view": "0.3.*",
+        "gabordemooij/redbean": "dev-master"
     }
 }
