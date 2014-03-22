@@ -11,4 +11,7 @@ apt-get install -y htop
 
 
 # Configure stuff? i.e. apache
+rm -rf /var/www
+ln -fs /vagrant /var/www
+
 php /vagrant/composer.json install
