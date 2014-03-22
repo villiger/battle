@@ -4,23 +4,10 @@ This is a game where two people can engage in a chess-like fight on a grid-based
 
 ## Installation
 
-### Composer
+Download and install composer first – follow [this introduction](https://getcomposer.org/doc/00-intro.md)
+on the composer website.
 
-Download composer first:
-
-``` bash
-$ curl -sS https://getcomposer.org/installer | php
-```
-
-Or if you don't have curl:
-
-``` bash
-$ php -r "readfile('https://getcomposer.org/installer');" | php
-```
-
-### Dependencies
-
-Install the dependencies using composer:
+After that, install the dependencies using composer:
 
 ``` bash
 $ php composer.phar install
