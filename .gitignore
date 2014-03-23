@@ -4,3 +4,4 @@ composer.lock
 vendor/
 *.iml
 .idea/
+.vagrant/
