@@ -8,6 +8,7 @@ apt-get update
 apt-get install -q -y apache2
 apt-get install -q -y php5
 apt-get install -q -y php5-json
+apt-get install -q -y php5-mysql
 apt-get install -q -y mysql-server
 
 # Additional utilities
