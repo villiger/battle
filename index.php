@@ -20,8 +20,8 @@ $app->config(array(
 
 R::setup(DB_PATH, DB_USER, DB_PASS);
 
-require 'routes/index.php';
-require 'routes/game.php';
+require_once 'routes/index.php';
+require_once 'routes/game.php';
 
 $app->run();
 
