@@ -2,6 +2,7 @@
     "require": {
         "slim/slim": "2.*",
         "petebrowne/slim-layout-view": "0.3.*",
-        "gabordemooij/redbean": "dev-master"
+        "gabordemooij/redbean": "dev-master",
+        "hybridauth/hybridauth": "dev-master"
     }
 }

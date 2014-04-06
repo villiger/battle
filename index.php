@@ -20,6 +20,8 @@ $app->config(array(
 
 R::setup(DB_PATH, DB_USER, DB_PASS);
 
+require_once 'library/battle/Auth.php';
+
 require_once 'routes/index.php';
 require_once 'routes/game.php';
 
