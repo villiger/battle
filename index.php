@@ -1,7 +1,7 @@
 <?php
 
 require 'vendor/autoload.php';
-use RedBean_Facade as R;
+require 'rb.phar';
 
 if (! file_exists('config.php')) {
     die("Please copy 'config.php.dist' to 'config.php' and set all values properly.");
@@ -21,6 +21,8 @@ $app->config(array(
 R::setup(DB_PATH, DB_USER, DB_PASS);
 
 require_once 'library/battle/Auth.php';
+require_once 'library/battle/Game.php';
+require_once 'library/battle/Field.php';
 
 require_once 'routes/index.php';
 require_once 'routes/game.php';
