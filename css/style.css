@@ -14,27 +14,28 @@ body {
 .field {
   border-collapse: collapse;
   margin: 20px 0;
+  background-image: url(/img/field/grass.png);
 }
 .field .tile {
-  width: 78px;
-  height: 78px;
+  width: 80px;
+  height: 80px;
   text-align: center;
   vertical-align: center;
-  background-image: url(/img/tiles.png);
+  background-image: url(/img/field/tiles.png);
   background-repeat: no-repeat;
 }
 .field .tile.ground {
-  background-position: -1px -1px;
+  background-position: 0 0;
 }
 .field .tile.water {
-  background-position: -80px -1px;
+  background-position: -80px 0;
 }
 .field .tile.forest {
-  background-position: -160px -1px;
+  background-position: -160px 0;
 }
 .field .tile.mountain {
-  background-position: -240px -1px;
+  background-position: -240px 0;
 }
 .field .tile.desert {
-  background-position: -320px -1px;
+  background-position: -320px 0;
 }

@@ -3,7 +3,7 @@
 $field = $game->getField();
 ?>
 
-<table class="field" style="width: <?= $field->getWidth() * 78 ?>px;">
+<table class="field" style="width: <?= $field->getWidth() * 80 ?>px;">
     <tbody>
         <?php for($row = 0; $row < $field->getHeight(); $row++): ?>
             <tr>

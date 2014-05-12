@@ -17,33 +17,35 @@ body {
   border-collapse: collapse;
   margin: 20px 0;
 
+  background-image: url(/img/field/grass.png);
+
   .tile {
-    width: 78px;
-    height: 78px;
+    width: 80px;
+    height: 80px;
     text-align: center;
     vertical-align: center;
 
-    background-image: url(/img/tiles.png);
+    background-image: url(/img/field/tiles.png);
     background-repeat: no-repeat;
 
     &.ground {
-      background-position: -1px -1px;
+      background-position: 0 0;
     }
 
     &.water {
-      background-position: @tile-scale * -16px -1px;
+      background-position: @tile-scale * -16px 0;
     }
 
     &.forest {
-      background-position: @tile-scale * -32px -1px;
+      background-position: @tile-scale * -32px 0;
     }
 
     &.mountain {
-      background-position: @tile-scale * -48px -1px;
+      background-position: @tile-scale * -48px 0;
     }
 
     &.desert {
-      background-position: @tile-scale * -64px -1px;
+      background-position: @tile-scale * -64px 0;
     }
   }
 }

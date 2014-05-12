@@ -5,8 +5,8 @@ namespace Battle
     class Field 
     {
         const TILE_GROUND = 0;
-        const TILE_WATER = 1;
-        const TILE_FOREST = 2;
+        const TILE_FOREST = 1;
+        const TILE_WATER = 2;
         const TILE_MOUNTAIN = 3;
         const TILE_DESERT = 4;
 
@@ -65,10 +65,10 @@ namespace Battle
         public function getTileType($row, $column)
         {
             switch ($this->getTile($row, $column)) {
-                case self::TILE_WATER:
-                    return 'water';
                 case self::TILE_FOREST:
                     return 'forest';
+                case self::TILE_WATER:
+                    return 'water';
                 case self::TILE_MOUNTAIN:
                     return 'mountain';
                 case self::TILE_DESERT:
@@ -113,11 +113,11 @@ namespace Battle
 
             if ($rand < 50) {
                 return self::TILE_GROUND;
-            } elseif ($rand < 60) {
+            } elseif ($rand < 70) {
+                return self::TILE_FOREST;
+            } elseif ($rand < 80) {
                 return self::TILE_WATER;
             } elseif ($rand < 90) {
-                return self::TILE_FOREST;
-            } elseif ($rand < 95) {
                 return self::TILE_MOUNTAIN;
             } else {
                 return self::TILE_DESERT;

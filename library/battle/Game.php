@@ -18,8 +18,8 @@ namespace Battle
 
             $bean = \R::dispense("game");
             $bean->seed = $seed;
-            $bean->field_width = 6;
-            $bean->field_height = 6;
+            $bean->field_width = 8;
+            $bean->field_height = 8;
             $bean->is_done = false;
             $bean->updated = \R::isoDateTime();
             $bean->created = \R::isoDateTime();
