@@ -18,7 +18,7 @@ $app->config(array(
     'layout' => 'layout/base.php'
 ));
 
-R::setup(DB_PATH, DB_USER, DB_PASS);
+\R::setup(DB_PATH, DB_USER, DB_PASS);
 
 require_once 'library/battle/Auth.php';
 require_once 'library/battle/Game.php';
@@ -29,4 +29,4 @@ require_once 'routes/game.php';
 
 $app->run();
 
-R::close();
+\R::close();

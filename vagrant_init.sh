@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Set non interactive setup (mainly for mysql-server)
 export DEBIAN_FRONTEND=noninteractive
 
