@@ -1,23 +1,17 @@
 @import "bootstrap.min.css";
 
+@tile-base-size: 16px;
 @tile-scale: 5;
+@tile-size: @tile-base-size * @tile-scale;
 
 body {
-  font-family: sans-serif;
-  font-size: 12px;
-  min-height: 100%;
   padding-top: 70px;
 }
 
-.nav, .pagination, .carousel, .panel-title a {
-  cursor: pointer;
-}
-
 .field {
-  border-collapse: collapse;
-  empty-cells: show;
   margin: 20px 0;
-
+  empty-cells: show;
+  border-collapse: collapse;
   background-image: url(/img/field/grass.png);
 
   .tile {
@@ -30,24 +24,24 @@ body {
     }
 
     &.water {
-      background-position: @tile-scale * -16px 0;
+      background-position: -1 * @tile-size 0;
     }
 
     &.forest {
-      background-position: @tile-scale * -32px 0;
+      background-position: -2 * @tile-size 0;
     }
 
     &.mountain {
-      background-position: @tile-scale * -48px 0;
+      background-position: -3 * @tile-size 0;
     }
 
     &.desert {
-      background-position: @tile-scale * -64px 0;
+      background-position: -4 * @tile-size 0;
     }
 
     .sizer {
-      width: @tile-scale * 16px;
-      height: @tile-scale * 16px;
+      width: @tile-size;
+      height: @tile-size;
     }
   }
 }

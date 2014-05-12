@@ -1,20 +1,11 @@
 @import "bootstrap.min.css";
 body {
-  font-family: sans-serif;
-  font-size: 12px;
-  min-height: 100%;
   padding-top: 70px;
 }
-.nav,
-.pagination,
-.carousel,
-.panel-title a {
-  cursor: pointer;
-}
 .field {
-  border-collapse: collapse;
-  empty-cells: show;
   margin: 20px 0;
+  empty-cells: show;
+  border-collapse: collapse;
   background-image: url(/img/field/grass.png);
 }
 .field .tile {
