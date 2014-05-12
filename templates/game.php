@@ -14,5 +14,3 @@ $field = $game->getField();
         <?php endfor; ?>
     </tbody>
 </table>
-
-<p>Game ID: <?= $game->getId() ?></p>
