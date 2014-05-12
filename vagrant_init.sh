@@ -10,6 +10,7 @@ apt-get install -q -y php5
 apt-get install -q -y php5-json
 apt-get install -q -y php5-mysql
 apt-get install -q -y php5-curl
+apt-get install -q -y php-apc
 apt-get install -q -y mysql-server
 
 # Additional utilities
@@ -38,6 +39,7 @@ cd /vagrant
 #When running on windows, creating links seems to throw "Protocol Error". Copying instead
 #ln -s config.php.dist config.php
 cp config.php.dist config.php
+cp /usr/share/doc/php5-apcu/apc.php .
 
 # Dev libs and tools
 curl -sS https://getcomposer.org/installer | php
