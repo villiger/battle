@@ -2,14 +2,16 @@
 
 namespace Battle
 {
-    use RedBean_Facade as R;
-
     class Auth
     {
         private $provider;
         private $config;
         private $adapter;
 
+        /**
+         * @param $provider
+         * @throws \Exception
+         */
         public function __construct($provider)
         {
             $supportedProviders = array('google');
@@ -75,25 +77,33 @@ namespace Battle
             return $user;
         }
 
+        /**
+         * @param $email
+         * @param $name
+         * @param $image
+         * @param $identifier
+         * @param bool $active
+         * @return \RedBean_OODBBean
+         */
         private function createUser($email, $name, $image, $identifier, $active = true)
         {
             $providerField = $this->provider . "_id";
 
             if ($email !== null) {
-                $user = R::findOne('user', 'email LIKE ?', [ $email ]);
+                $user = \R::findOne('user', 'email LIKE ?', [ $email ]);
             } else {
-                $user = R::findOne('user', "$providerField = ?", [ $identifier ]);
+                $user = \R::findOne('user', "$providerField = ?", [ $identifier ]);
             }
 
             if ($user === null) {
-                $user = R::dispense('user');
+                $user = \R::dispense('user');
                 $user->$providerField = $identifier;
                 $user->email = $email;
                 $user->name = $name;
                 $user->image = $image;
                 $user->is_active = $active;
-                $user->updated = R::isoDateTime();
-                $user->created = R::isoDateTime();
+                $user->updated = \R::isoDateTime();
+                $user->created = \R::isoDateTime();
             } else {
                 if (! $user->email) {
                     $user->email = $email;
@@ -105,10 +115,10 @@ namespace Battle
 
                 $user->name = $name;
                 $user->image = $image;
-                $user->updated = R::isoDateTime();
+                $user->updated = \R::isoDateTime();
             }
 
-            R::store($user);
+            \R::store($user);
 
             return $user;
         }

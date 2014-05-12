@@ -1,74 +1,92 @@
 <?php
+
 namespace Battle
 {
-
-    class Game 
+    class Game
     {
-        
-        public $gameId;
-
+        private $id;
         private $field;
-        private $playerOne;
-        private $playerTwo;
-        private $playerOneUnits;
-        private $playerTwoUnits;
 
-        public function __construct($gameId = null){
-            $this->field = new \Battle\Field();
+        /**
+         * Creates a new game, saves it to the database and the cache.
+         *
+         * @return Game
+         */
+        public static function create()
+        {
+            $seed = mt_rand();
 
-            if($gameId === null){
-                $this->field->generate();
+            $bean = \R::dispense("game");
+            $bean->seed = $seed;
+            $bean->field_width = 6;
+            $bean->field_height = 6;
+            $bean->is_done = false;
+            $bean->updated = \R::isoDateTime();
+            $bean->created = \R::isoDateTime();
+            \R::store($bean);
 
-                # Other initialization for new game goes here..
+            $id = (int) $bean->getID();
+            $game = new Game($id);
 
-                $this->initialSave();
-            } else {
-                $this->gameId = $gameId;
-                $game = \R::load('game', $gameId);
-                $this->field->load(json_decode($game->field));
-            }
-            
+            apc_store("game_$id", $game);
+
+            return $game;
         }
 
-        public function getField(){
-            return $this->field->get();
-        }
+        /**
+         * Loads game from the cache or the database.
+         * If not in cache, saves it to the cache.
+         *
+         * @param int $id
+         * @return Game
+         * @throws \Exception
+         */
+        public static function load($id)
+        {
+            $game = apc_fetch("game_$id");
 
-        public function getFieldSize(){
-            return \Battle\Field::FIELD_SIZE;
-        }
+            if ($game === false) {
+                $game = new Game($id);
 
-        public function initialSave(){
-            $game = \R::dispense('game');
-
-            $game->field = json_encode($this->field->get());
-
-            $this->gameId = \R::store($game);
-
-        }
-
-        public function save(){
-            $game = \R::load('game', $this->gameId);
-            $game->field = json_encode($this->field->get());
-            $this->gameId = \R::store($game);
-        }
-
-        public function loadPost($post){
-            $fieldSize = $post['field_size'];
-
-            $field = array();
-
-            for($i = 0; $i < $fieldSize; $i++){
-                $field[$i] = array();
-                for($j = 0; $j < $fieldSize; $j++){
-                    $field[$i][$j] = $post['cell_' . $i . '_' . $j];
-                }
+                apc_store("game_$id", $game);
             }
 
-            $this->field->load($field);
-
-            $this->save();
+            return $game;
         }
 
+        /**
+         * @param int $id
+         * @throws \Exception
+         */
+        public function __construct($id)
+        {
+            $this->id = $id;
+
+            $bean = \R::load("game", $id);
+            if (! $bean) {
+                throw new \Exception("Game with id '$id' not found.");
+            }
+
+            // Set random seed to generate the field accordingly
+            mt_srand((int) $bean->seed);
+
+            $this->field = new Field($this, (int) $bean->field_width, (int) $bean->field_height);
+        }
+
+        /**
+         * @return int
+         */
+        public function getId()
+        {
+            return $this->id;
+        }
+
+        /**
+         * @return Field
+         */
+        public function getField()
+        {
+            return $this->field;
+        }
     }
 }
