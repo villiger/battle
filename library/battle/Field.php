@@ -115,7 +115,7 @@ namespace Battle
                 return self::TILE_GROUND;
             } elseif ($rand < 60) {
                 return self::TILE_WATER;
-            } elseif ($rand < 80) {
+            } elseif ($rand < 90) {
                 return self::TILE_FOREST;
             } elseif ($rand < 95) {
                 return self::TILE_MOUNTAIN;
