@@ -7,12 +7,10 @@ namespace Battle
         const TILE_GROUND = 0;
         const TILE_WATER = 1;
         const TILE_FOREST = 2;
-        const TILE_HILL = 3;
-        const TILE_MOUNTAIN = 4;
-        const TILE_DESERT = 5;
+        const TILE_MOUNTAIN = 3;
+        const TILE_DESERT = 4;
 
-        const MIN_TILE = 0;
-        const MAX_TILE = 5;
+        const NUM_TILES = 5;
 
         private $game;
         private $width;
@@ -60,6 +58,28 @@ namespace Battle
         }
 
         /**
+         * @param int $row
+         * @param int $column
+         * @return string
+         */
+        public function getTileType($row, $column)
+        {
+            switch ($this->getTile($row, $column)) {
+                case self::TILE_WATER:
+                    return 'water';
+                case self::TILE_FOREST:
+                    return 'forest';
+                case self::TILE_MOUNTAIN:
+                    return 'mountain';
+                case self::TILE_DESERT:
+                    return 'desert';
+                case self::TILE_GROUND:
+                default:
+                    return 'ground';
+            }
+        }
+
+        /**
          * @throws \Exception
          */
         private function generate()
@@ -97,8 +117,6 @@ namespace Battle
                 return self::TILE_WATER;
             } elseif ($rand < 80) {
                 return self::TILE_FOREST;
-            } elseif ($rand < 90) {
-                return self::TILE_HILL;
             } elseif ($rand < 95) {
                 return self::TILE_MOUNTAIN;
             } else {

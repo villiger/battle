@@ -15,10 +15,26 @@ body {
   border-collapse: collapse;
   margin: 20px 0;
 }
-.field td {
-  border: 1px solid lightgray;
-  width: 50px;
-  height: 50px;
+.field .tile {
+  width: 78px;
+  height: 78px;
   text-align: center;
   vertical-align: center;
+  background-image: url(/img/tiles.png);
+  background-repeat: no-repeat;
+}
+.field .tile.ground {
+  background-position: -1px -1px;
+}
+.field .tile.water {
+  background-position: -80px -1px;
+}
+.field .tile.forest {
+  background-position: -160px -1px;
+}
+.field .tile.mountain {
+  background-position: -240px -1px;
+}
+.field .tile.desert {
+  background-position: -320px -1px;
 }
