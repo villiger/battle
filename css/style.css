@@ -13,14 +13,12 @@ body {
 }
 .field {
   border-collapse: collapse;
+  empty-cells: show;
   margin: 20px 0;
   background-image: url(/img/field/grass.png);
 }
 .field .tile {
-  width: 80px;
-  height: 80px;
-  text-align: center;
-  vertical-align: center;
+  padding: 0;
   background-image: url(/img/field/tiles.png);
   background-repeat: no-repeat;
 }
@@ -38,4 +36,8 @@ body {
 }
 .field .tile.desert {
   background-position: -320px 0;
+}
+.field .tile .sizer {
+  width: 80px;
+  height: 80px;
 }
