@@ -27,6 +27,7 @@ var Game = {
         // disable image smoothing on scale, we are a pixel art game
         this.context.mozImageSmoothingEnabled = false;
         this.context.webkitImageSmoothingEnabled = false;
+        this.context.msImageSmoothingEnabled = false;
         this.context.imageSmoothingEnabled = false;
 
         // draw the game if all images are loaded
