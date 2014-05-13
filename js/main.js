@@ -2,7 +2,9 @@
  * Entry point for custom JavaScript code.
  */
 
-Game = {
+"use strict";
+
+var Game = {
     tileBaseSize: 16,
     tileScale: 5,
     tileSize: null,
@@ -27,7 +29,14 @@ Game = {
         this.context.webkitImageSmoothingEnabled = false;
         this.context.imageSmoothingEnabled = false;
 
+        // draw the game if all images are loaded
+        this.Images.callback = this.draw.bind(this);
+
         this.Field.init();
+    },
+
+    draw: function() {
+        this.Field.draw();
     },
 
     Field: {
@@ -43,16 +52,8 @@ Game = {
         TILE_DESERT: 4,
 
         init: function() {
-            var that = this;
-
-            this.images.ground = new Image();
-            this.images.ground.src = '/img/field/grass.png';
-            this.images.ground.onload = function() {
-                that.draw();
-            };
-
-            this.images.tiles = new Image();
-            this.images.tiles.src = '/img/field/tiles.png';
+            this.images.grass = Game.Images.load('/img/field/grass.png');
+            this.images.tiles = Game.Images.load('/img/field/tiles.png');
         },
 
         draw: function() {
@@ -74,8 +75,36 @@ Game = {
             var dx = ds * column;
             var dy = ds * row;
 
-            Game.context.drawImage(this.images.ground, 0, 0, ss, ss, dx, dy, ds, ds);
-            Game.context.drawImage(this.images.tiles, sx, sy, ss, ss, dx, dy, ds, ds);
+            // draw the first layer, which is the ground
+            Game.context.drawImage(this.images.grass, 0, 0, ss, ss, dx, dy, ds, ds);
+
+            // only draw the second tile layer, if it's not ground
+            if (type > 0) {
+                Game.context.drawImage(this.images.tiles, sx, sy, ss, ss, dx, dy, ds, ds);
+            }
+        }
+    },
+
+    Images: {
+        images: [],
+        loadedCount: 0,
+        callback: null,
+
+        load: function(path) {
+            var image = new Image();
+            image.src = path;
+            image.onload = this.onload.bind(this);
+
+            this.images.push(image);
+
+            return image;
+        },
+
+        onload: function() {
+            // when everything is loaded, we call the callback, if it's set
+            if (this.images.length === ++this.loadedCount) {
+                this.callback && this.callback();
+            }
         }
     }
 };
