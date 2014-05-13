@@ -67,7 +67,7 @@ namespace Battle
                 throw new \Exception("Game with id '$id' not found.");
             }
 
-            // Set random seed to generate the Field accordingly
+            // Set random seed to generate the field accordingly
             mt_srand((int) $bean->seed);
 
             $this->field = new Field($this, (int) $bean->field_width, (int) $bean->field_height);
