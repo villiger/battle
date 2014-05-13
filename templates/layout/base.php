@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="/css/style.css">
     <script src="/js/lib/jquery.min.js"></script>
     <script src="/js/lib/bootstrap.min.js"></script>
-    <script src="/js/main.js"></script>
+    <script src="/js/util.js"></script>
+    <script src="/js/game.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
