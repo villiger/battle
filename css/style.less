@@ -10,38 +10,4 @@ body {
 
 .field {
   margin: 20px 0;
-  empty-cells: show;
-  border-collapse: collapse;
-  background-image: url(/img/field/grass.png);
-
-  .tile {
-    padding: 0;
-    background-image: url(/img/field/tiles.png);
-    background-repeat: no-repeat;
-
-    &.ground {
-      background-position: 0 0;
-    }
-
-    &.water {
-      background-position: -1 * @tile-size 0;
-    }
-
-    &.forest {
-      background-position: -2 * @tile-size 0;
-    }
-
-    &.mountain {
-      background-position: -3 * @tile-size 0;
-    }
-
-    &.desert {
-      background-position: -4 * @tile-size 0;
-    }
-
-    .sizer {
-      width: @tile-size;
-      height: @tile-size;
-    }
-  }
 }

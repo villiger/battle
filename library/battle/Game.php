@@ -67,7 +67,7 @@ namespace Battle
                 throw new \Exception("Game with id '$id' not found.");
             }
 
-            // Set random seed to generate the field accordingly
+            // Set random seed to generate the Field accordingly
             mt_srand((int) $bean->seed);
 
             $this->field = new Field($this, (int) $bean->field_width, (int) $bean->field_height);
@@ -87,6 +87,24 @@ namespace Battle
         public function getField()
         {
             return $this->field;
+        }
+
+        /**
+         * Returns JSON representation of the game's current state.
+         *
+         * @return string
+         */
+        public function getStateJson()
+        {
+            $state = array(
+                'field' => array(
+                    'width' => $this->getField()->getWidth(),
+                    'height' => $this->getField()->getHeight(),
+                    'tiles' => $this->getField()->getTiles()
+                )
+            );
+
+            return json_encode($state);
         }
     }
 }

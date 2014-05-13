@@ -4,31 +4,4 @@ body {
 }
 .field {
   margin: 20px 0;
-  empty-cells: show;
-  border-collapse: collapse;
-  background-image: url(/img/field/grass.png);
-}
-.field .tile {
-  padding: 0;
-  background-image: url(/img/field/tiles.png);
-  background-repeat: no-repeat;
-}
-.field .tile.ground {
-  background-position: 0 0;
-}
-.field .tile.water {
-  background-position: -80px 0;
-}
-.field .tile.forest {
-  background-position: -160px 0;
-}
-.field .tile.mountain {
-  background-position: -240px 0;
-}
-.field .tile.desert {
-  background-position: -320px 0;
-}
-.field .tile .sizer {
-  width: 80px;
-  height: 80px;
 }

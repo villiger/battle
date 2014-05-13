@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/css/style.css">
     <script src="/js/lib/jquery.min.js"></script>
     <script src="/js/lib/bootstrap.min.js"></script>
+    <script src="/js/main.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">

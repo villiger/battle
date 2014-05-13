@@ -48,6 +48,14 @@ namespace Battle
         }
 
         /**
+         * @return array
+         */
+        public function getTiles()
+        {
+            return $this->tiles;
+        }
+
+        /**
          * @param int $row
          * @param int $column
          * @return int
