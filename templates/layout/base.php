@@ -9,6 +9,12 @@
     <script src="/js/lib/bootstrap.min.js"></script>
     <script src="/js/util.js"></script>
     <script src="/js/game.js"></script>
+    <script>
+        // eliminate the #_=_ by Facebook
+        if (window.location.hash && window.location.hash === "#_=_") {
+            window.history.replaceState("", document.title, window.location.pathname);
+        }
+    </script>
 </head>
 <body>
 
@@ -21,12 +27,13 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/">Battle Chess</a>
+                <a class="navbar-brand" href="/games">Battle Chess</a>
             </div>
             <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="/games">Games</a></li>
                     <li><a href="/friends">Friends</a></li>
+                    <li><a href="/logout">Logout</a></li>
                 </ul>
             </div>
         </div>
