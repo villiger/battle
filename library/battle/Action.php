@@ -1,6 +1,6 @@
 <?php
 
-namespace battle;
+namespace Battle;
 
 class Action {
 	const TYPE_MESSAGE = 0;
