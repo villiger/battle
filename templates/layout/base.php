@@ -11,9 +11,9 @@
     <script src="/js/game.js"></script>
 </head>
 <body>
+
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="container">
-            <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
                     <span class="sr-only">Toggle navigation</span>
@@ -28,9 +28,10 @@
                     <li><a href="/games">Games</a></li>
                     <li><a href="/friends">Friends</a></li>
                 </ul>
-            </div><!-- /.navbar-collapse -->
-        </div><!-- /.container-fluid -->
+            </div>
+        </div>
     </nav>
+
     <div class="main container">
         <div class="row">
             <div class="main-content col-xs-12 col-lg-12">
@@ -38,5 +39,6 @@
             </div>
         </div>
     </div>
+
 </body>
 </html>

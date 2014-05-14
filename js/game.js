@@ -5,39 +5,49 @@
 "use strict";
 
 var Game = {
-    tileBaseSize: 16,
-    tileScale: 5,
-    tileSize: null,
-    canvas: null,
-    context: null,
+    selection: null,
+    images: {},
 
     init: function(state) {
-        this.tileSize = this.tileBaseSize * this.tileScale;
-
         this.Field.width = state.field.width;
         this.Field.height = state.field.height;
         this.Field.tiles = state.field.tiles;
 
-        this.canvas = document.getElementById('field');
-        this.canvas.width = this.Field.width * this.tileSize;
-        this.canvas.height = this.Field.height * this.tileSize;
+        Util.Canvas.init('field', this.Field.width, this.Field.height);
 
-        this.context = this.canvas.getContext('2d');
+        Util.Image.onloaded = this.draw.bind(this);
+        Util.Canvas.onselect = this.onselect.bind(this);
 
-        // disable image smoothing on scale, we are a pixel art game
-        this.context.mozImageSmoothingEnabled = false;
-        this.context.webkitImageSmoothingEnabled = false;
-        this.context.msImageSmoothingEnabled = false;
-        this.context.imageSmoothingEnabled = false;
-
-        // draw the game if all images are loaded
-        Util.Image.callback = this.draw.bind(this);
+        this.images.selection = Util.Image.load('/img/selection.png');
 
         this.Field.init();
     },
 
     draw: function() {
         this.Field.draw();
+
+        // if we have a selection, we draw the selection image
+        if (this.selection) {
+            Util.Canvas.drawTile(this.images.selection, 0, 0, this.selection.row, this.selection.column);
+        }
+    },
+
+    onselect: function(row, column) {
+        var selection = {
+            row: row,
+            column: column
+        };
+
+        // we compare the current selection and the new selection.
+        // if it's the same thing, we remove the selection.
+        if (JSON.stringify(this.selection) === JSON.stringify(selection)) {
+            this.selection = null;
+        } else {
+            this.selection = selection;
+        }
+
+        // re-draw the game after selection
+        this.draw();
     },
 
     Field: {
@@ -66,22 +76,10 @@ var Game = {
         },
 
         drawTile: function(type, row, column) {
-            // source coordinates
-            var ss = Game.tileBaseSize;
-            var sx = ss * type;
-            var sy = 0;
+            Util.Canvas.drawTile(this.images.grass, 0, 0, row, column);
 
-            // destination coordinates
-            var ds = Game.tileSize;
-            var dx = ds * column;
-            var dy = ds * row;
-
-            // draw the first layer, which is the ground
-            Game.context.drawImage(this.images.grass, 0, 0, ss, ss, dx, dy, ds, ds);
-
-            // only draw the second tile layer, if it's not ground
             if (type > 0) {
-                Game.context.drawImage(this.images.tiles, sx, sy, ss, ss, dx, dy, ds, ds);
+                Util.Canvas.drawTile(this.images.tiles, 0, type, row, column);
             }
         }
     }
