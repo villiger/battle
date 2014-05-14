@@ -42,9 +42,9 @@ class Unit {
         $this->id = $id;
         $this->field = $field;
 
-        $bean = \R::load("game", $id);
+        $bean = \R::load("game", $this->getId());
         if (! $bean) {
-            throw new \Exception("Unit with id '$id' not found.");
+            throw new \Exception("Unit with id '{$this->getId()}' not found.");
         }
 
         $this->userId = $bean->user_id;
@@ -64,6 +64,7 @@ class Unit {
 
         $bean->row = $this->row;
         $bean->column = $this->column;
+        $bean->updated = \R::isoDateTime();
         \R::store($bean);
     }
 
