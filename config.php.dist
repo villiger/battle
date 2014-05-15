@@ -8,3 +8,6 @@ const DB_PASS = "";
 
 const AUTH_GOOGLE_ID = "";
 const AUTH_GOOGLE_SECRET = "";
+
+const AUTH_FACEBOOK_ID = "";
+const AUTH_FACEBOOK_SECRET = "";

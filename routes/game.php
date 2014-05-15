@@ -1,7 +1,10 @@
 <?php
 
-// TODO: change this back to POST
-$app->get('/game', function() use ($app) {
+$app->get('/games', function() use ($app) {
+    $app->render('game/list.php');
+});
+
+$app->post('/game', function() use ($app) {
     # Creates a new game
 
     # Check if logged in
@@ -20,7 +23,7 @@ $app->get('/game/:id', function($id) use ($app) {
 
     # Check if logged in and player of this game in particular
 
-    $app->render('game.php', array('game' => $game));
+    $app->render('game/game.php', array('game' => $game));
 });
 
 $app->get('/game/:id/action/dummy', function($gameId) use ($app) {
