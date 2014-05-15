@@ -20,6 +20,7 @@ namespace Battle
             $bean->seed = $seed;
             $bean->field_width = 8;
             $bean->field_height = 8;
+            $bean->revision = 0;
             $bean->is_done = false;
             $bean->updated = \R::isoDateTime();
             $bean->created = \R::isoDateTime();
@@ -71,6 +72,8 @@ namespace Battle
             mt_srand((int) $bean->seed);
 
             $this->field = new Field($this, (int) $bean->field_width, (int) $bean->field_height);
+
+            // @TODO: Get actions and apply them to the field!
         }
 
         /**
