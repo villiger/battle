@@ -42,7 +42,7 @@ class Unit {
         $this->id = $id;
         $this->field = $field;
 
-        $bean = \R::load("game", $this->getId());
+        $bean = \R::load("unit", $this->getId());
         if (! $bean) {
             throw new \Exception("Unit with id '{$this->getId()}' not found.");
         }
@@ -57,7 +57,7 @@ class Unit {
      */
     public function store()
     {
-        $bean = \R::load("game", $this->getId());
+        $bean = \R::load("unit", $this->getId());
         if (! $bean) {
             throw new \Exception("Unit with id '{$this->getId()}' not found.");
         }

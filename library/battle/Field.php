@@ -87,6 +87,46 @@ class Field
         }
     }
 
+    public function calcCost($sourceRow, $sourceColumn, $targetRow, $targetColumn){
+        $visitedTiles = array();
+        $nextTiles = array();
+        $currentTiles = array(array($sourceRow, $sourceColumn));
+        $currentCost = 0;
+
+        $variations = array(array(1, 0), array(-1, 0), array(0, 1), array(0, -1), );
+
+        while( $currentTiles ){
+            if( in_array(array($targetRow, $targetColumn), $currentTiles) ){
+                return $currentCost;
+            }
+            foreach( $currentTiles as $tile ){
+                foreach( $variations as $variation ){
+                    $newTile = array($tile[0] + $variation[0], $tile[1] + $variation[1]);
+                    if( isValidTile($newTile[0], $newTile[1]) && !in_array($newTile, $visitedTiles) ){
+                        $nextTiles[] = $newTile;
+                    }
+                }
+                $visitedTiles[] = $tile; 
+            }
+            $currentTiles = $nextTiles;
+            // @TODO: How to handle more expensive routes? eg. swamps
+            $currentCost++;
+        }
+    }
+
+    private function isValidTile($row, $column){
+        $valid = True;
+        if( $row >= $this->getWidth() or $row < 0){
+            $valid = False;
+        }elseif( $column >= $this->getHeight() or $column < 0 ){
+            $valid = False;
+        }
+
+        // @TODO: Add cases for obstructions! eg. mountains
+
+        return $valid;
+    }
+
     /**
      * @throws \Exception
      */

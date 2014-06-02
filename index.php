@@ -39,6 +39,7 @@ if (! isset($_SESSION['user'])) {
 require_once 'library/battle/Auth.php';
 require_once 'library/battle/Game.php';
 require_once 'library/battle/Field.php';
+//require_once 'library/battle/Action.php';
 
 require_once 'routes/auth.php';
 require_once 'routes/index.php';
