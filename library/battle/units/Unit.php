@@ -99,4 +99,16 @@ class Unit {
     {
         return $this->userId;
     }
+
+    /**
+     * Sets the position of the unit
+     * 
+     * @param int row of new position
+     * @param int column of new position
+     */
+    public function setPosition($row, $column)
+    {
+        $this->row = $row;
+        $this->column = $column;
+    }
 }

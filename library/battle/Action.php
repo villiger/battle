@@ -2,32 +2,34 @@
 
 namespace Battle;
 
-class Action {
-	const TYPE_MESSAGE = 0;
-	const TYPE_ATTACK = 1;
-	const TYPE_MOVE = 2;
-	const TYPE_PLACE = 3;
+use \Battle\Units;
 
-	private $playerId;
-	private $gameId;
-	private $payload;
-	private $type;
+class Action {
+	const TYPE_MESSAGE = 1;
+	const TYPE_ATTACK = 2;
+	const TYPE_MOVE = 3;
+	const TYPE_PLACE = 4;
+
+	protected $playerId;
+	protected $gameId;
+	protected $payload;
+	protected $type;
 
 
 	public static function load($id){
 		$action = \R::load('action', $id);
+
 		if(! $action){
 			throw new \Exception("Action with id '$id' not found!");
 		}
 
-		return create($action);
+		$payload = json_decode($action->payload, True);
+
+		return create($actionBean->type, $actionBean->player_id, $actionBean->game_id, $payload);
 	}
 
-	public static function create($actionBean){
-		$playerId = $actionBean->player_id;
-		$gameId = $actionBean->game_id;
-		$payload = json_decode($actionBean->payload, True);
-		switch( $actionBean->type ){
+	public static function create($type, $playerId, $gameId, $payload){
+		switch( $type ){
 			case self::TYPE_MESSAGE:
 				return new MessageAction($playerId, $gameId, $payload);
 			case self::TYPE_ATTACK:
@@ -39,37 +41,6 @@ class Action {
 			default:
 				throw new \Exception("Invalid type '$type' given!");
 		}
-	}
-
-	public static function save($type, $playerId, $gameId, $payload){
-		$action = \R::dispense('action');
-
-		$action->type = $type;
-		$action->payload = json_encode($payload);
-		$action->createdAt = \R::isoDateTime();
-
-		// @TODO: Find a way to relate actions without having to load the game/player
-
-		$game = \R::load('game', $gameId);
-
-		if(! $game ){
-			throw new \Exception("Game with id '$gameId' could not be found!");
-		}
-
-		$game->noLoad()->xownActionList[] = $action;
-
-		\R::store( $game );
-
-		$player = \R::load('player', $playerId);
-
-		if(! $player ){
-			throw new \Exception("Player with id '$playerId' could not be found!");
-		}
-
-		$player->noLoad()->xownActionList[] = $action;
-		\R::store( $player );
-
-		\R::store( $action );
 	}
 
 	/**
@@ -88,20 +59,62 @@ class Action {
 
 		$realActions = array();
 		foreach( $actions as $action ){
-			$realActions[] = Action::create($action);
+			// We could just call load() but that seems to be wasted energy
+			$realActions[] = Action::create($action->type, $action->player_id, $action->game_id, json_decode($action->payload, True));
 		}
 
 		return $realActions;
 	}
 
 	/**
+	 * Not for external use
+	 *
+	 */
+	protected function __construct($playerId, $gameId, $payload){
+		$this->playerId = $playerId;
+		$this->gameId = $gameId;
+		$this->payload = $payload;
+	}
+
+	public function store(){
+		$action = \R::dispense('action');
+
+		$action->type = $this->type;
+		$action->payload = json_encode($this->payload);
+		$action->createdAt = \R::isoDateTime();
+
+		// @TODO: Find a way to relate actions without having to load the game/player
+
+		$game = \R::load('game', $this->gameId);
+
+		if(! $game ){
+			throw new \Exception("Game with id '$gameId' could not be found!");
+		}
+
+		$game->noLoad()->xownActionList[] = $action;
+
+		\R::store( $game );
+
+		$player = \R::load('player', $this->playerId);
+
+		if(! $player ){
+			throw new \Exception("Player with id '$playerId' could not be found!");
+		}
+
+		$player->noLoad()->xownActionList[] = $action;
+		\R::store( $player );
+
+		\R::store( $action );
+	}
+
+	/**
 	 * @return int type of action
 	 */
 	public function getType(){
-		if(! isset($this->$type) ){
+		if(! isset($this->type) ){
 			throw new \Exception("Type not found! Object not properly initialized!");
 		}
-		return $this->$type;
+		return $this->type;
 	}
 
 }
@@ -112,11 +125,11 @@ class MessageAction extends Action {
 	private $message;
 
 	public function __construct($playerId, $gameId, $payload){
-		$this->$playerId = $playerId;
-		$this->$gameId = $gameId;
-		$this->$message = $payload["message"];
+		parent::__construct($playerId, $gameId, $payload);
 
-		$this->$type = self::TYPE_MESSAGE;
+		$this->message = $payload["message"];
+
+		$this->type = self::TYPE_MESSAGE;
 	}
 
 	public function execute(){
@@ -126,9 +139,9 @@ class MessageAction extends Action {
 
 	public function serialize(){
 		return array(
-			"type" => $this->getType(), 
-			"message" => $this->$message, 
-			"playerId" => $this->$playerId
+			"type" => $this->type, 
+			"message" => $this->message, 
+			"playerId" => $this->playerId
 		);
 	}
 
@@ -141,21 +154,20 @@ class AttackAction extends Action {
 	private $targetColumn;
 
 	public function __construct($playerId, $gameId, $payload){
-		
-		$this->$playerId = $playerId;
-		$this->$gameId = $gameId;
-		$this->$unitId = $payload["unitId"];
-		$this->$targetRow = $payload["targetRow"];
-		$this->$targetColumn = $payload["targetColumn"];
+		parent::__construct($playerId, $gameId, $payload);
 
-		$this->$type = self::TYPE_ATTACK;
+		$this->unitId = $payload["unitId"];
+		$this->targetRow = $payload["targetRow"];
+		$this->targetColumn = $payload["targetColumn"];
+
+		$this->type = self::TYPE_ATTACK;
 	}
 
 	public function execute(){
-		$game = \Battle\Game::load($gameId);
+		$game = \Battle\Game::load($this->gameId);
 
 		// Get specific unit.. for real!
-		$unit = $game->getUnit($unitId);
+		$unit = Units\Unit($game->getField(), $unitId);
 
 		// Check if target is an (attackable) unit (and get it?)
 
@@ -174,10 +186,10 @@ class AttackAction extends Action {
 
 	public function serialize(){
 		return array(
-			"type" => $this->getType(), 
-			"unitId" => $this->$unitId, 
-			"targetRow" => $this->$targetRow,
-			"targetColumn" => $this->$targetColumn);
+			"type" => $this->type, 
+			"unitId" => $this->unitId, 
+			"targetRow" => $this->targetRow,
+			"targetColumn" => $this->targetColumn);
 	}
 
 }
@@ -190,26 +202,23 @@ class MoveAction extends Action {
 	private $targetColumn;
 
 	public function __construct($playerId, $gameId, $payload){
-		
-		$this->$playerId = $playerId;
-		$this->$gameId = $gameId;
-		$this->$unitId = $payload["unitId"];
-		$this->$targetRow = $payload["targetRow"];
-		$this->$targetColumn = $payload["targetColumn"];
+		parent::__construct($playerId, $gameId, $payload);
 
-		$this->$type = self::TYPE_MOVE;
+		$this->unitId = $payload["unitId"];
+		$this->targetRow = $payload["targetRow"];
+		$this->targetColumn = $payload["targetColumn"];
+
+		$this->type = self::TYPE_MOVE;
 	}
 
 	public function execute(){
-		$game = \Battle\Game::load($gameId);
+		$game = \Battle\Game::load($this->gameId);
 
 		// get specific unit
 		// Should the unit be in the game or the field?!
-		$unit = $game.getUnit($unitId);
+		$unit = Units\Unit($game->getField(), $unitId);
 
-		// Game get field
-
-		// calc costs for move \w field
+		// Calculate the cost for the move
 		$moveCost = $game->getField()->calcCost($unit->getRow(), $unit->getColumn(), $targetRow, $targetColumn);
 
 		if( $unit.getMaxMovement() >= $moveCost ){
@@ -221,10 +230,10 @@ class MoveAction extends Action {
 
 	public function serialize(){
 		return array(
-			"type" => $this->getType(), 
-			"unitId" => $this->$unitId, 
-			"targetRow" => $this->$targetRow,
-			"targetColumn" => $this->$targetColumn);
+			"type" => $this->type, 
+			"unitId" => $this->unitId, 
+			"targetRow" => $this->targetRow,
+			"targetColumn" => $this->targetColumn);
 	}
 }
 
@@ -238,15 +247,13 @@ class PlaceAction extends Action {
 	private $targetColumn;
 
 	public function __construct($playerId, $gameId, $payload){
-		
-		$this->$playerId = $playerId;
-		$this->$gameId = $gameId;
+		parent::__construct($playerId, $gameId, $payload);
 
-		$this->$unitType = $payload["unitType"];
-		$this->$targetRow = $payload["targetRow"];
-		$this->$targetColumn = $payload["targetColumn"];
+		$this->unitType = $payload["unitType"];
+		$this->targetRow = $payload["targetRow"];
+		$this->targetColumn = $payload["targetColumn"];
 
-		$this->$type = self::TYPE_PLACE;
+		$this->type = self::TYPE_PLACE;
 	}
 
 	public function execute(){
@@ -255,10 +262,10 @@ class PlaceAction extends Action {
 
 	public function serialize(){
 		return array(
-			"type" => $this->getType(), 
-			"unitType" => $this->$unitType, 
-			"targetRow" => $this->$targetRow,
-			"targetColumn" => $this->$targetColumn);
+			"type" => $this->type, 
+			"unitType" => $this->unitType, 
+			"targetRow" => $this->targetRow,
+			"targetColumn" => $this->targetColumn);
 	}
 
 }
