@@ -18,10 +18,10 @@ $app->post('/game', function() use ($app) {
     $game->addPlayer($opponent);
 
     $actions = array(
-        Action::create(Action::TYPE_PLACE, $user, $game, array('row' => 0, 'column' => 0)),
-        Action::create(Action::TYPE_PLACE, $user, $game, array('row' => 0, 'column' => 1)),
-        Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 0)),
-        Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 1)),
+        Action::create(Action::TYPE_PLACE, $user, $game, array('row' => 0, 'column' => 3)),
+        Action::create(Action::TYPE_PLACE, $user, $game, array('row' => 0, 'column' => 4)),
+        Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 3)),
+        Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 4)),
     );
 
     foreach ($actions as $action) {
@@ -39,10 +39,13 @@ $app->post('/game', function() use ($app) {
 
 $app->get('/game/:id', function($id) use ($app) {
     $game = \Battle\Game::load($id);
+    $user = getCurrentUser();
 
-    # Check if logged in and player of this game in particular
-
-    $app->render('game/game.php', array('game' => $game));
+    if ($game->isPlayer($user)) {
+        $app->render('game/game.php', array('game' => $game, 'user' => $user));
+    } else {
+        throw new Exception("You are not a player of this game.");
+    }
 });
 
 $app->post('/game/:id/action', function($gameId) use ($app) {

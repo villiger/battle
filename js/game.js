@@ -7,11 +7,29 @@
 var Game = {
     selection: null,
     images: {},
+    userId: null,
+    currentPlayerIndex: null,
+    playerIndex: null,
+    playerIndexOpponent: null,
+    players: null,
 
-    init: function(state) {
+    init: function(userId, state) {
+        this.userId = userId;
+        this.players = state.players;
+        this.currentPlayerIndex = state.current_player;
+
+        for (var i = 0; i < this.players.length; i++) {
+            if (this.players[i].id == this.userId) {
+                this.playerIndex = i;
+            } else {
+                this.playerIndexOpponent = i;
+            }
+        }
+
         this.Field.width = state.field.width;
         this.Field.height = state.field.height;
         this.Field.tiles = state.field.tiles;
+        this.Field.units = state.field.units;
 
         Util.Canvas.init('field', this.Field.width, this.Field.height);
 
@@ -54,6 +72,7 @@ var Game = {
         width: null,
         height: null,
         tiles: null,
+        units: null,
         images: {},
 
         TILE_GROUND: 0,
@@ -65,12 +84,23 @@ var Game = {
         init: function() {
             this.images.grass = Util.Image.load('/img/field/grass.png');
             this.images.tiles = Util.Image.load('/img/field/tiles.png');
+            this.images.units = Util.Image.load('/img/field/units.png');
         },
 
         draw: function() {
+            // draw tiles
             for (var row = 0; row < this.height; row++) {
                 for (var column = 0; column < this.width; column++) {
                     this.drawTile(this.tiles[row][column], row, column);
+                }
+            }
+
+            // draw units
+            for (var unitId in this.units) {
+                if (this.units.hasOwnProperty(unitId)) {
+                    var unit = this.units[unitId];
+
+                    this.drawUnit(unit);
                 }
             }
         },
@@ -81,6 +111,11 @@ var Game = {
             if (type > 0) {
                 Util.Canvas.drawTile(this.images.tiles, 0, type, row, column);
             }
+        },
+
+        drawUnit: function(unit) {
+            var type = unit.user_id == Game.userId ? Game.playerIndex : Game.playerIndexOpponent;
+            Util.Canvas.drawTile(this.images.units, 0, type, unit.row, unit.column);
         }
     }
 };

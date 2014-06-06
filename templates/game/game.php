@@ -1,12 +1,12 @@
 <?php
 /** @var $game \Battle\Game */
-$field = $game->getField();
+/** @var $user \Battle\User */
 ?>
 
 <canvas id="field" class="field"></canvas>
 
 <script>
     (function() {
-        Game.init(<?= $game->toJson() ?>);
+        Game.init(<?= $user->getId() ?>, <?= $game->toJson() ?>);
     })();
 </script>
