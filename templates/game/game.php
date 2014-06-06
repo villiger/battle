@@ -7,6 +7,6 @@ $field = $game->getField();
 
 <script>
     (function() {
-        Game.init(<?= $game->getStateJson() ?>);
+        Game.init(<?= $game->toJson() ?>);
     })();
 </script>

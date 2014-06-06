@@ -2,6 +2,8 @@
 
 namespace Battle;
 
+use Battle\Units\Unit;
+
 class Field
 {
     const TILE_GROUND = 0;
@@ -16,6 +18,7 @@ class Field
     private $width;
     private $height;
     private $tiles;
+    private $units;
 
     /**
      * @param Game $game
@@ -27,6 +30,8 @@ class Field
         $this->game = $game;
         $this->width = $width;
         $this->height = $height;
+        $this->units = array();
+        $this->lastUnitId = 0;
 
         $this->generate();
     }
@@ -66,6 +71,23 @@ class Field
     }
 
     /**
+     * @return array
+     */
+    public function getUnits()
+    {
+        return $this->units;
+    }
+
+    /**
+     * @param int $id
+     * @return Unit
+     */
+    public function getUnit($id)
+    {
+        return $this->units[$id];
+    }
+
+    /**
      * @param int $row
      * @param int $column
      * @return string
@@ -102,7 +124,7 @@ class Field
             foreach( $currentTiles as $tile ){
                 foreach( $variations as $variation ){
                     $newTile = array($tile[0] + $variation[0], $tile[1] + $variation[1]);
-                    if( isValidTile($newTile[0], $newTile[1]) && !in_array($newTile, $visitedTiles) ){
+                    if ($this->isEmptyTile($newTile[0], $newTile[1]) && !in_array($newTile, $visitedTiles) ){
                         $nextTiles[] = $newTile;
                     }
                 }
@@ -114,17 +136,22 @@ class Field
         }
     }
 
-    private function isValidTile($row, $column){
-        $valid = True;
-        if( $row >= $this->getWidth() or $row < 0){
-            $valid = False;
-        }elseif( $column >= $this->getHeight() or $column < 0 ){
-            $valid = False;
+    /**
+     * @param int $row
+     * @param int $column
+     * @return bool
+     */
+    public function isEmptyTile($row, $column)
+    {
+        if ($row < 0 || $row >= $this->getWidth()) {
+            return false;
+        } elseif ($column < 0 || $column >= $this->getHeight()) {
+            return false;
         }
 
         // @TODO: Add cases for obstructions! eg. mountains
 
-        return $valid;
+        return true;
     }
 
     /**
@@ -170,5 +197,25 @@ class Field
         } else {
             return self::TILE_DESERT;
         }
+    }
+
+    /**
+     * @param User $player
+     * @param int $row
+     * @param int $column
+     * @return bool
+     */
+    public function createUnit(User $player, $row, $column)
+    {
+        if ($this->game->isPlayer($player)) {
+            $unitId = ++$this->lastUnitId;
+            $unit = new Unit($this, $player, $unitId, $row, $column);
+
+            $this->units[$unitId] = $unit;
+
+            return $unit;
+        }
+
+        return false;
     }
 }

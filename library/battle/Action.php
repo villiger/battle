@@ -4,268 +4,232 @@ namespace Battle;
 
 use \Battle\Units;
 
-class Action {
-	const TYPE_MESSAGE = 1;
-	const TYPE_ATTACK = 2;
-	const TYPE_MOVE = 3;
-	const TYPE_PLACE = 4;
+class Action
+{
+	const TYPE_MESSAGE = 'message';
+	const TYPE_PLACE = 'place';
+    const TYPE_MOVE = 'move';
+    const TYPE_ATTACK = 'attack';
 
-	protected $playerId;
-	protected $gameId;
+    protected $type;
+    protected $user;
+    protected $game;
 	protected $payload;
-	protected $type;
 
+    /**
+     * @param int $id
+     * @return AttackAction|MessageAction|MoveAction|PlaceAction
+     */
+    public static function load($id)
+    {
+		$bean = Action::getBean($id);
 
-	public static function load($id){
-		$action = \R::load('action', $id);
+        $user = User::load($bean->user_id);
+        $game = Game::load($bean->game_id);
+		$payload = json_decode($bean->payload, true);
 
-		if(! $action){
-			throw new \Exception("Action with id '$id' not found!");
-		}
-
-		$payload = json_decode($action->payload, True);
-
-		return create($actionBean->type, $actionBean->player_id, $actionBean->game_id, $payload);
+		return Action::create($bean->type, $user, $game, $payload);
 	}
 
-	public static function create($type, $playerId, $gameId, $payload){
-		switch( $type ){
+    /**
+     * @param string $type
+     * @param User $user
+     * @param Game $game
+     * @param array $payload
+     * @return AttackAction|MessageAction|MoveAction|PlaceAction
+     * @throws \Exception
+     */
+    public static function create($type, User $user, Game $game, array $payload)
+    {
+		switch ($type) {
 			case self::TYPE_MESSAGE:
-				return new MessageAction($playerId, $gameId, $payload);
+				return new MessageAction($user, $game, $payload);
+            case self::TYPE_PLACE:
+                return new PlaceAction($user, $game, $payload);
+            case self::TYPE_MOVE:
+                return new MoveAction($user, $game, $payload);
 			case self::TYPE_ATTACK:
-				return new AttackAction($playerId, $gameId, $payload);
-			case self::TYPE_MOVE:
-				return new MoveAction($playerId, $gameId, $payload);
-			case self::TYPE_PLACE:
-				return new PlaceAction($playerId, $gameId, $payload);
+				return new AttackAction($user, $game, $payload);
 			default:
 				throw new \Exception("Invalid type '$type' given!");
 		}
 	}
 
-	/**
-	 * @param int $gameId
-	 * @param int $lastActionId
-	 * @return array of actions since the given action
-	 */
-	public static function getNewActions($gameId, $lastActionId){
-		$game = \R::load('game', $gameId);
-		if(! $game ){
-			throw new \Exception("Game with id '$gameId' not found!");
-		}
+    /**
+     * Creates an action from an encoded JSON string.
+     *
+     * @param string $json
+     * @return AttackAction|MessageAction|MoveAction|PlaceAction
+     */
+    public static function fromJson($json)
+    {
+        $decoded = json_decode($json, true);
 
-		// maybe just use \R::find('action', ...) !?
-		$actions = $game->withCondition(' id > ? ', [$lastActionId])->ownActionList;
+        return Action::create(
+            $decoded['type'],
+            $decoded['user_id'],
+            $decoded['game_id'],
+            $decoded['payload']
+        );
+    }
 
-		$realActions = array();
-		foreach( $actions as $action ){
-			// We could just call load() but that seems to be wasted energy
-			$realActions[] = Action::create($action->type, $action->player_id, $action->game_id, json_decode($action->payload, True));
-		}
+    /**
+     * Returns a JSON representation of this action.
+     *
+     * @return string
+     */
+    public function toJson()
+    {
+        return json_encode(array(
+            "type" => $this->type,
+            "user_id" => $this->user->getId(),
+            "game_id" => $this->game->getId(),
+            "payload" => $this->payload
+        ));
+    }
 
-		return $realActions;
-	}
+    /**
+     * @param int $id
+     * @return \RedBeanPHP\OODBBean
+     * @throws \Exception
+     */
+    public static function getBean($id)
+    {
+        $bean = \R::load('action', $id);
 
-	/**
-	 * Not for external use
-	 *
-	 */
-	protected function __construct($playerId, $gameId, $payload){
-		$this->playerId = $playerId;
-		$this->gameId = $gameId;
+        if (! $bean){
+            throw new \Exception("Action with id '$id' not found!");
+        }
+
+        return $bean;
+    }
+
+    /**
+     * @param string $type
+     * @param User $user
+     * @param Game $game
+     * @param string $payload
+     */
+    protected function __construct($type, User $user, Game $game, $payload)
+    {
+        $this->type = $type;
+		$this->user = $user;
+		$this->game = $game;
 		$this->payload = $payload;
 	}
 
-	public function store(){
-		$action = \R::dispense('action');
+    /**
+     * Creates a new action in the database. Just call this once!
+     */
+    public function store()
+    {
+		$actionBean = \R::dispense('action');
+        $actionBean->type = $this->type;
+        $actionBean->payload = json_encode($this->payload);
+        $actionBean->createdAt = \R::isoDateTime();
 
-		$action->type = $this->type;
-		$action->payload = json_encode($this->payload);
-		$action->createdAt = \R::isoDateTime();
+		$gameBean = Game::getBean($this->game->getId());
+		$gameBean->noLoad()->xownActionList[$actionBean->getID()] = $actionBean;
+		\R::store($gameBean);
 
-		// @TODO: Find a way to relate actions without having to load the game/player
+		$userBean = User::getBean($this->user->getId());
+		$userBean->noLoad()->xownActionList[$actionBean->getID()] = $actionBean;
+		\R::store($userBean);
 
-		$game = \R::load('game', $this->gameId);
-
-		if(! $game ){
-			throw new \Exception("Game with id '$gameId' could not be found!");
-		}
-
-		$game->noLoad()->xownActionList[] = $action;
-
-		\R::store( $game );
-
-		$player = \R::load('player', $this->playerId);
-
-		if(! $player ){
-			throw new \Exception("Player with id '$playerId' could not be found!");
-		}
-
-		$player->noLoad()->xownActionList[] = $action;
-		\R::store( $player );
-
-		\R::store( $action );
+        \R::store($actionBean);
 	}
 
-	/**
-	 * @return int type of action
-	 */
-	public function getType(){
-		if(! isset($this->type) ){
-			throw new \Exception("Type not found! Object not properly initialized!");
-		}
-		return $this->type;
-	}
-
+    /**
+     * This action has to be overriden by child class.
+     *
+     * @return bool
+     */
+    public function execute()
+    {
+        return false;
+    }
 }
 
-
-class MessageAction extends Action {
-
+class MessageAction extends Action
+{
 	private $message;
 
-	public function __construct($playerId, $gameId, $payload){
-		parent::__construct($playerId, $gameId, $payload);
+	public function __construct(User $user, Game $game, array $payload)
+    {
+		parent::__construct(self::TYPE_MESSAGE, $user, $game, $payload);
 
 		$this->message = $payload["message"];
-
-		$this->type = self::TYPE_MESSAGE;
 	}
 
-	public function execute(){
-		// Not needed on server side for now. Thus always return True
-		return True;
-	}
+	public function execute()
+    {
+		$this->game->addMessage($this->user, $this->message);
 
-	public function serialize(){
-		return array(
-			"type" => $this->type, 
-			"message" => $this->message, 
-			"playerId" => $this->playerId
-		);
-	}
-
-}
-
-class AttackAction extends Action {
-
-	private $unitId;
-	private $targetRow;
-	private $targetColumn;
-
-	public function __construct($playerId, $gameId, $payload){
-		parent::__construct($playerId, $gameId, $payload);
-
-		$this->unitId = $payload["unitId"];
-		$this->targetRow = $payload["targetRow"];
-		$this->targetColumn = $payload["targetColumn"];
-
-		$this->type = self::TYPE_ATTACK;
-	}
-
-	public function execute(){
-		$game = \Battle\Game::load($this->gameId);
-
-		// Get specific unit.. for real!
-		$unit = Units\Unit($game->getField(), $unitId);
-
-		// Check if target is an (attackable) unit (and get it?)
-
-		// Get cost for attack (same method as move?!)
-		$attackCost = $game->getField()->calcCost($unit->getRow(), $unit->getColumn(), $targetRow, $targetColumn);
-
-		// Check if target is in range 
-		if( $unit.getMaxAttackDistance() >= $attackCost ){
-			// Do the attack...
-			return True;
-		}
-		return False;
-
-
-	}
-
-	public function serialize(){
-		return array(
-			"type" => $this->type, 
-			"unitId" => $this->unitId, 
-			"targetRow" => $this->targetRow,
-			"targetColumn" => $this->targetColumn);
-	}
-
-}
-
-class MoveAction extends Action {
-
-	// This is a local id for the unit?!
-	private $unitId;
-	private $targetRow;
-	private $targetColumn;
-
-	public function __construct($playerId, $gameId, $payload){
-		parent::__construct($playerId, $gameId, $payload);
-
-		$this->unitId = $payload["unitId"];
-		$this->targetRow = $payload["targetRow"];
-		$this->targetColumn = $payload["targetColumn"];
-
-		$this->type = self::TYPE_MOVE;
-	}
-
-	public function execute(){
-		$game = \Battle\Game::load($this->gameId);
-
-		// get specific unit
-		// Should the unit be in the game or the field?!
-		$unit = Units\Unit($game->getField(), $unitId);
-
-		// Calculate the cost for the move
-		$moveCost = $game->getField()->calcCost($unit->getRow(), $unit->getColumn(), $targetRow, $targetColumn);
-
-		if( $unit.getMaxMovement() >= $moveCost ){
-			$unit.setPosition($targetRow, $targetColumn);
-			return True;
-		}
-		return False;
-	}
-
-	public function serialize(){
-		return array(
-			"type" => $this->type, 
-			"unitId" => $this->unitId, 
-			"targetRow" => $this->targetRow,
-			"targetColumn" => $this->targetColumn);
+		return true;
 	}
 }
 
-/**
- * Do we need it for now?
- */
-class PlaceAction extends Action {
+class PlaceAction extends Action
+{
+    private $row;
+    private $column;
 
-	private $unitType;
-	private $targetRow;
-	private $targetColumn;
+    public function __construct(User $user, Game $game, array $payload)
+    {
+        parent::__construct(self::TYPE_PLACE, $user, $game, $payload);
 
-	public function __construct($playerId, $gameId, $payload){
-		parent::__construct($playerId, $gameId, $payload);
+        $this->row = $payload["row"];
+        $this->column = $payload["column"];
+    }
 
-		$this->unitType = $payload["unitType"];
-		$this->targetRow = $payload["targetRow"];
-		$this->targetColumn = $payload["targetColumn"];
+    public function execute()
+    {
+        return $this->game->getField()->createUnit($this->user, $this->row, $this->column);
+    }
+}
 
-		$this->type = self::TYPE_PLACE;
+class MoveAction extends Action
+{
+    private $unit;
+    private $row;
+    private $column;
+
+    public function __construct(User $user, Game $game, array $payload)
+    {
+        parent::__construct(self::TYPE_MOVE, $user, $game, $payload);
+
+        $unitId = (int) $payload["unit_id"];
+
+        $this->unit = $this->game->getField()->getUnit($unitId);
+        $this->row = (int) $payload["row"];
+        $this->column = (int) $payload["column"];
+    }
+
+    public function execute()
+    {
+        return $this->unit->moveTo($this->row, $this->column);
+    }
+}
+
+class AttackAction extends Action
+{
+	private $unit;
+	private $row;
+	private $column;
+
+	public function __construct(User $user, Game $game, array $payload)
+    {
+		parent::__construct(self::TYPE_ATTACK, $user, $game, $payload);
+
+        $unitId = (int) $payload["unit_id"];
+
+        $this->unit = $this->game->getField()->getUnit($unitId);
+		$this->row = (int) $payload["row"];
+		$this->column = (int) $payload["column"];
 	}
 
-	public function execute(){
-		throw new \Exception("Not yet implemented!");
+	public function execute()
+    {
+        return $this->unit->attackOn($this->row, $this->column);
 	}
-
-	public function serialize(){
-		return array(
-			"type" => $this->type, 
-			"unitType" => $this->unitType, 
-			"targetRow" => $this->targetRow,
-			"targetColumn" => $this->targetColumn);
-	}
-
 }

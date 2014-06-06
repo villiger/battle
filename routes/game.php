@@ -1,5 +1,7 @@
 <?php
 
+use Battle\Action;
+
 $app->get('/games', function() use ($app) {
     $user = getCurrentUser();
     $app->render('game/list.php', array('currentUser' => $user, 'games' => $user->getGames()));
@@ -14,6 +16,23 @@ $app->post('/game', function() use ($app) {
     $game = \Battle\Game::create();
     $game->addPlayer($user);
     $game->addPlayer($opponent);
+
+    $actions = array(
+        Action::create(Action::TYPE_PLACE, $user, $game, array('row' => 0, 'column' => 0)),
+        Action::create(Action::TYPE_PLACE, $user, $game, array('row' => 0, 'column' => 1)),
+        Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 0)),
+        Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 1)),
+    );
+
+    foreach ($actions as $action) {
+        /** @var $action Action */
+        if ($action->execute()) {
+            $action->store();
+        }
+    }
+
+
+    $game->saveToCache();
 
     $app->redirect('/game/' . $game->getId());
 });

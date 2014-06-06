@@ -1,71 +1,26 @@
 <?php
 
-
 namespace Battle\Units;
 
 use Battle;
+use Battle\Field;
+use Battle\User;
 
-class Unit {
+class Unit
+{
     private $id;
-    private $userId;
+    private $user;
     private $field;
     private $row;
     private $column;
 
-    /**
-     * @param Battle\Field $field
-     * @param int $userId
-     * @param int $row
-     * @param int $column
-     * @return Unit
-     */
-    public static function create(Battle\Field $field, $userId, $row, $column)
-    {
-        $bean = \R::dispense('unit');
-        $bean->user_id = $userId;
-        $bean->row = $row;
-        $bean->column = $column;
-        $bean->updated = \R::isoDateTime();
-        $bean->created = \R::isoDateTime();
-        \R::store($bean);
-
-        return new Unit($field, (int) $bean->getID());
-    }
-
-    /**
-     * @param Battle\Field $field
-     * @param int $id
-     * @throws \Exception
-     */
-    public function __construct(Battle\Field $field, $id)
+    public function __construct(Field $field, User $user, $id, $row, $column)
     {
         $this->id = $id;
         $this->field = $field;
-
-        $bean = \R::load("unit", $this->getId());
-        if (! $bean) {
-            throw new \Exception("Unit with id '{$this->getId()}' not found.");
-        }
-
-        $this->userId = $bean->user_id;
-        $this->row = $bean->row;
-        $this->column = $bean->column;
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function store()
-    {
-        $bean = \R::load("unit", $this->getId());
-        if (! $bean) {
-            throw new \Exception("Unit with id '{$this->getId()}' not found.");
-        }
-
-        $bean->row = $this->row;
-        $bean->column = $this->column;
-        $bean->updated = \R::isoDateTime();
-        \R::store($bean);
+        $this->user = $user;
+        $this->row = $row;
+        $this->column = $column;
     }
 
     /**
@@ -93,22 +48,47 @@ class Unit {
     }
 
     /**
-     * @return int
+     * @return User
      */
-    public function getUserId()
+    public function getUser()
     {
-        return $this->userId;
+        return $this->user;
     }
 
     /**
-     * Sets the position of the unit
+     * Tries to set the unit to a new position.
      * 
-     * @param int row of new position
-     * @param int column of new position
+     * @param int $row
+     * @param int $column
+     * @return bool
      */
-    public function setPosition($row, $column)
+    public function moveTo($row, $column)
     {
-        $this->row = $row;
-        $this->column = $column;
+        if ($this->field->isEmptyTile($row, $column)) {
+            $this->row = $row;
+            $this->column = $column;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Tries to attack a position.
+     *
+     * @param int $row
+     * @param int $column
+     * @return bool
+     */
+    public function attackOn($row, $column)
+    {
+        if (! $this->field->isEmptyTile($row, $column)) {
+            // TODO: do the actuel attack
+
+            return true;
+        }
+
+        return false;
     }
 }

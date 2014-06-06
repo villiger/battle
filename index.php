@@ -43,12 +43,11 @@ function getCurrentUser()
     }
 }
 
-require_once 'library/battle/Auth.php';
 require_once 'library/battle/Game.php';
 require_once 'library/battle/Field.php';
-require_once 'library/battle/units/Unit.php';
 require_once 'library/battle/Action.php';
 require_once 'library/battle/User.php';
+require_once 'library/battle/units/Unit.php';
 
 session_start();
 
