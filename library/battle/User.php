@@ -74,12 +74,12 @@ class User {
         return array_map(function ($gameBean) {
             /** @var $gameBean OODBBean */
             return Game::load($gameBean->getID());
-        }, $userBean->sharedGameList);
+        }, $userBean->with('ORDER BY game.created DESC')->sharedGameList);
     }
 
     public function getFriends()
     {
-        $userBean = User::getBean($this->getId());
+        $userBean = User::getBean($this->getId())->with('ORDER BY name ASC');
 
         return array_map(function ($friendBean) {
             /** @var $friendBean OODBBean */
