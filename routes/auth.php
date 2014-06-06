@@ -6,6 +6,7 @@ use Facebook\FacebookRequestException;
 use Facebook\FacebookRequest;
 use Facebook\GraphObject;
 use Facebook\GraphUser;
+use Battle\User;
 
 FacebookSession::setDefaultApplication(AUTH_FACEBOOK_ID, AUTH_FACEBOOK_SECRET);
 
@@ -13,6 +14,17 @@ function getRedirectUrl($provider)
 {
     return "http://$_SERVER[SERVER_NAME]:$_SERVER[SERVER_PORT]/login/$provider/callback";
 }
+
+$app->get('/login/facebook', function() use ($app) {
+    $redirectUrl = getRedirectUrl('facebook');
+
+    $helper = new FacebookRedirectLoginHelper($redirectUrl);
+    $loginUrl = $helper->getLoginUrl(array(
+        'scope' => 'email, user_friends'
+    ));
+
+    $app->redirect($loginUrl);
+});
 
 $app->get('/login/facebook/callback', function() use ($app) {
     $redirectUrl = getRedirectUrl('facebook');
@@ -69,8 +81,10 @@ $app->get('/login/facebook/callback', function() use ($app) {
 
         \R::store($user);
 
-        $_SESSION['user'] = $user;
-        $_SESSION['user_id'] = (int) $user->getID();
+        $userId = (int) $user->getID();
+
+        $_SESSION['user'] = new User($userId);
+        $_SESSION['user_id'] = $userId;
         $_SESSION['facebook_token'] = $session->getToken();
 
         $app->redirect('/games');
@@ -79,17 +93,6 @@ $app->get('/login/facebook/callback', function() use ($app) {
     } catch (Exception $ex) {
         var_dump($ex);
     }
-});
-
-$app->get('/login/facebook', function() use ($app) {
-    $redirectUrl = getRedirectUrl('facebook');
-
-    $helper = new FacebookRedirectLoginHelper($redirectUrl);
-    $loginUrl = $helper->getLoginUrl(array(
-        'scope' => 'email, user_friends'
-    ));
-
-    $app->redirect($loginUrl);
 });
 
 $app->get('/logout', function() use ($app) {

@@ -1,19 +1,19 @@
 <?php
 
 $app->get('/games', function() use ($app) {
-    $app->render('game/list.php');
+    $user = getCurrentUser();
+    $app->render('game/list.php', array('currentUser' => $user, 'games' => $user->getGames()));
 });
 
 $app->post('/game', function() use ($app) {
-    # Creates a new game
+    $user = getCurrentUser();
 
-    # Check if logged in
+    $opponentId = $app->request->post('opponent');
+    $opponent = \Battle\User::load($opponentId);
 
     $game = \Battle\Game::create();
-
-    # Create account for user if game already existing?
-
-    # Check if friend exists?
+    $game->addPlayer($user);
+    $game->addPlayer($opponent);
 
     $app->redirect('/game/' . $game->getId());
 });
