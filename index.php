@@ -9,6 +9,8 @@ if (! file_exists('config.php')) {
 
 require 'config.php';
 
+date_default_timezone_set(TIME_ZONE);
+
 $app = new \Slim\Slim();
 
 $app->config(array(

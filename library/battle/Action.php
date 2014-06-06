@@ -11,6 +11,7 @@ class Action
     const TYPE_MOVE = 'move';
     const TYPE_ATTACK = 'attack';
 
+    protected $id;
     protected $type;
     protected $user;
     protected $game;
@@ -28,7 +29,7 @@ class Action
         $game = Game::load($bean->game_id);
 		$payload = json_decode($bean->payload, true);
 
-		return Action::create($bean->type, $user, $game, $payload);
+		return Action::create($bean->type, $user, $game, $payload, $id);
 	}
 
     /**
@@ -36,20 +37,21 @@ class Action
      * @param User $user
      * @param Game $game
      * @param array $payload
+     * @param int beanId may not yet exist
      * @return AttackAction|MessageAction|MoveAction|PlaceAction
      * @throws \Exception
      */
-    public static function create($type, User $user, Game $game, array $payload)
+    public static function create($type, User $user, Game $game, array $payload, $beanId = -1)
     {
 		switch ($type) {
 			case self::TYPE_MESSAGE:
-				return new MessageAction($user, $game, $payload);
+				return new MessageAction($user, $game, $payload, $beanId);
             case self::TYPE_PLACE:
-                return new PlaceAction($user, $game, $payload);
+                return new PlaceAction($user, $game, $payload, $beanId);
             case self::TYPE_MOVE:
-                return new MoveAction($user, $game, $payload);
+                return new MoveAction($user, $game, $payload, $beanId);
 			case self::TYPE_ATTACK:
-				return new AttackAction($user, $game, $payload);
+				return new AttackAction($user, $game, $payload, $beanId);
 			default:
 				throw new \Exception("Invalid type '$type' given!");
 		}
@@ -89,6 +91,14 @@ class Action
     }
 
     /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
      * @param int $id
      * @return \RedBeanPHP\OODBBean
      * @throws \Exception
@@ -110,12 +120,22 @@ class Action
      * @param Game $game
      * @param string $payload
      */
-    protected function __construct($type, User $user, Game $game, $payload)
+    protected function __construct($type, User $user, Game $game, $payload, $beanId)
     {
         $this->type = $type;
 		$this->user = $user;
 		$this->game = $game;
 		$this->payload = $payload;
+		$this->id = $beanId;
+	}
+
+	public function getCreated(){
+		try{
+			// could set be on object but would have to pass it through constructors
+			return Action::getBean($this->getId())->created;
+		} catch (Exception $e) {
+			return \R::isoDateTime();
+		}
 	}
 
     /**
@@ -154,9 +174,9 @@ class MessageAction extends Action
 {
 	private $message;
 
-	public function __construct(User $user, Game $game, array $payload)
+	public function __construct(User $user, Game $game, array $payload, $beanId)
     {
-		parent::__construct(self::TYPE_MESSAGE, $user, $game, $payload);
+		parent::__construct(self::TYPE_MESSAGE, $user, $game, $payload, $beanId);
 
 		$this->message = $payload["message"];
 	}
@@ -174,9 +194,9 @@ class PlaceAction extends Action
     private $row;
     private $column;
 
-    public function __construct(User $user, Game $game, array $payload)
+    public function __construct(User $user, Game $game, array $payload, $beanId)
     {
-        parent::__construct(self::TYPE_PLACE, $user, $game, $payload);
+        parent::__construct(self::TYPE_PLACE, $user, $game, $payload, $beanId);
 
         $this->row = $payload["row"];
         $this->column = $payload["column"];
@@ -194,9 +214,9 @@ class MoveAction extends Action
     private $row;
     private $column;
 
-    public function __construct(User $user, Game $game, array $payload)
+    public function __construct(User $user, Game $game, array $payload, $beanId)
     {
-        parent::__construct(self::TYPE_MOVE, $user, $game, $payload);
+        parent::__construct(self::TYPE_MOVE, $user, $game, $payload, $beanId);
 
         $unitId = (int) $payload["unit_id"];
 
@@ -217,9 +237,9 @@ class AttackAction extends Action
 	private $row;
 	private $column;
 
-	public function __construct(User $user, Game $game, array $payload)
+	public function __construct(User $user, Game $game, array $payload, $beanId)
     {
-		parent::__construct(self::TYPE_ATTACK, $user, $game, $payload);
+		parent::__construct(self::TYPE_ATTACK, $user, $game, $payload, $beanId);
 
         $unitId = (int) $payload["unit_id"];
 

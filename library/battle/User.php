@@ -71,10 +71,16 @@ class User {
     {
         $userBean = User::getBean($this->getId());
 
-        return array_map(function ($gameBean) {
+        $games = array_map(function ($gameBean) {
             /** @var $gameBean OODBBean */
             return Game::load($gameBean->getID());
-        }, $userBean->with('ORDER BY game.created DESC')->sharedGameList);
+        }, $userBean->sharedGameList);
+
+        usort( $games, function($a, $b){
+            return $a->getLastActionId() == $b->getLastActionId() ? 0 : ( $a->getLastActionId() < $b->getLastActionId() ) ? 1 : -1;
+        });
+
+        return $games;
     }
 
     public function getFriends()

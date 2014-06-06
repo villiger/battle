@@ -241,13 +241,33 @@ class Game
     }
 
     /**
+     * @return Action or NULL if non exists
+     */
+    public function getLastAction()
+    {
+        // TODO: this could be made faster, without database query.
+        $gameBean = Game::getBean($this->getId());
+        $lastActions = array_keys($gameBean->xownActionList);
+        if( $lastActions ){
+            return Action::load(max($lastActions));
+        } else {
+            return NULL;
+        }
+        
+    }
+
+    /**
      * @return int
      */
     public function getLastActionId()
     {
-        // TODO: this could be made faster, without database query.
-        $gameBean = Game::getBean($this->getId());
-        return max(array_keys($gameBean->xownActionList));
+        $lastAction = $this->getLastAction();
+        if( $lastAction ){
+            return $lastAction->getId();
+        } else {
+            return 0;
+        }
+        
     }
 
     /**
