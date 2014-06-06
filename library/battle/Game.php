@@ -213,7 +213,8 @@ class Game
                 );
             }, $this->players),
             'current_player' => $this->currentPlayer,
-            'messages' => $this->messages
+            'messages' => $this->messages,
+            'last_action_id' => $this->getLastActionId()
         );
 
         return json_encode($state);
@@ -237,6 +238,16 @@ class Game
             'user_id' => $player->getId(),
             'message' => $message
         );
+    }
+
+    /**
+     * @return int
+     */
+    public function getLastActionId()
+    {
+        // TODO: this could be made faster, without database query.
+        $gameBean = Game::getBean($this->getId());
+        return max(array_keys($gameBean->xownActionList));
     }
 
     /**
