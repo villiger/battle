@@ -12,7 +12,8 @@ FacebookSession::setDefaultApplication(AUTH_FACEBOOK_ID, AUTH_FACEBOOK_SECRET);
 
 function getRedirectUrl($provider)
 {
-    return "http://$_SERVER[SERVER_NAME]:$_SERVER[SERVER_PORT]/login/$provider/callback";
+    $port = $_SERVER['SERVER_PORT'] != 80 ? ':' . $_SERVER['SERVER_PORT'] : '';
+    return "http://$_SERVER[SERVER_NAME]$port/login/$provider/callback";
 }
 
 $app->get('/login/facebook', function() use ($app) {

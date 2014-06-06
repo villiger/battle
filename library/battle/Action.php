@@ -126,7 +126,7 @@ class Action
 		$actionBean = \R::dispense('action');
         $actionBean->type = $this->type;
         $actionBean->payload = json_encode($this->payload);
-        $actionBean->createdAt = \R::isoDateTime();
+        $actionBean->created = \R::isoDateTime();
 
 		$gameBean = Game::getBean($this->game->getId());
 		$gameBean->noLoad()->xownActionList[$actionBean->getID()] = $actionBean;
