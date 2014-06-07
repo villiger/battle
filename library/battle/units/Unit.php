@@ -15,6 +15,8 @@ class Unit
     private $column;
     private $maxLife;
     private $life;
+    private $maxEnergy;
+    private $energy;
 
     public function __construct(Field $field, User $user, $id, $row, $column)
     {
@@ -26,6 +28,9 @@ class Unit
 
         $this->maxLife = 10;
         $this->life = $this->maxLife;
+
+        $this->maxEnergy = 3;
+        $this->energy = $this->maxEnergy;
     }
 
     /**
@@ -84,6 +89,29 @@ class Unit
         $this->life = $life;
     }
 
+    /**
+     * @return int
+     */
+    public function getMaxEnergy()
+    {
+        return $this->maxEnergy;
+    }
+
+    /**
+     * @return int
+     */
+    public function getEnergy()
+    {
+        return $this->energy;
+    }
+
+    /**
+     * @param int $energy
+     */
+    public function setEnergy($energy)
+    {
+        $this->life = $energy;
+    }
 
     /**
      * Tries to set the unit to a new position.
@@ -95,10 +123,12 @@ class Unit
     public function moveTo($row, $column)
     {
         if ($this->field->isValidTile($row, $column)) {
-            $this->row = $row;
-            $this->column = $column;
+            if (! $this->field->getUnitByPosition($row, $column)) {
+                $this->row = $row;
+                $this->column = $column;
 
-            return true;
+                return true;
+            }
         }
 
         return false;

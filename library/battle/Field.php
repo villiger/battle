@@ -163,11 +163,17 @@ class Field
     {
         if ($row < 0 || $row >= $this->getWidth()) {
             return false;
-        } elseif ($column < 0 || $column >= $this->getHeight()) {
+        }
+
+        if ($column < 0 || $column >= $this->getHeight()) {
             return false;
         }
 
-        // @TODO: Add cases for obstructions! eg. mountains
+        $tile = $this->getTile($row, $column);
+
+        if ($tile == self::TILE_MOUNTAIN || $tile == self::TILE_WATER) {
+            return false;
+        }
 
         return true;
     }
@@ -240,7 +246,18 @@ class Field
     /**
      * @param Unit $unit
      */
-    public function removeUnit(Unit $unit) {
+    public function removeUnit(Unit $unit)
+    {
         unset($this->units[$unit->getId()]);
+    }
+
+    /**
+     * Replenish the energy of every unit.
+     */
+    public function replenishUnits()
+    {
+        array_walk($this->units, function (Unit &$unit) {
+            $unit->setEnergy($unit->getMaxEnergy());
+        });
     }
 }

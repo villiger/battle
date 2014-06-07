@@ -285,6 +285,7 @@ class EndTurnAction extends Action
         if ($this->user->getId() == $currentPlayer->getId()) {
             $opponent = $this->game->getOpponent($currentPlayer);
             $this->game->setCurrentPlayer($opponent);
+            $this->game->getField()->replenishUnits();
 
             return true;
         }

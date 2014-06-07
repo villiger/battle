@@ -103,10 +103,10 @@ var Util = {
 
     Misc: {
         checkEndTurnButton : function() {
-            if (Game.currentPlayer.id == Game.userId) {
-                $('#end-turn').attr('disabled', null);
+            if (Game.isCurrentPlayer()) {
+                $('#end-turn').attr('disabled', null).val('End turn');
             } else {
-                $('#end-turn').attr('disabled', 'disabled');
+                $('#end-turn').attr('disabled', 'disabled').val('Waiting for other player...');
             }
         }
     }

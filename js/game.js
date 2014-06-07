@@ -170,6 +170,23 @@ var Game = {
                 (tileSize - 32) * unit.life / unit.max_life,
                 3
             );
+
+            if (Game.currentPlayer.id == unit.user_id) {
+                context.fillStyle = "rgb(255, 255, 255)";
+                context.font = "12px sans-serif";
+                context.fillText(
+                    unit.energy,
+                    tileSize * unit.column + tileSize - 21,
+                    tileSize * unit.row + tileSize - 12
+                );
+            }
+        },
+
+        replenishUnits: function() {
+            for (var unitId in this.units) {
+                var unit = this.units[unitId];
+                unit.energy = unit.max_energy;
+            }
         },
 
         getUnitById: function(id) {
@@ -298,6 +315,23 @@ var Game = {
                 target.life = target.life - damage;
                 if (target.life <= 0) {
                     delete Game.Field.units[target.id];
+
+                    var unitsLeft = false;
+                    for (var unitId in Game.Field.units) {
+                        var unit = Game.Field.units[unitId];
+
+                        if (unit.user_id != Game.currentPlayer.id) {
+                            unitsLeft = true;
+                        }
+                    }
+
+                    if (! unitsLeft) {
+                        $('#end-game-title').html(Game.currentPlayer.name + " has won the game!");
+
+                        $('#end-game-modal').modal().on('hidden.bs.modal', function () {
+                            window.location = '/games';
+                        });
+                    }
                 }
 
                 Game.draw();
@@ -305,6 +339,8 @@ var Game = {
 
             endTurn: function(user) {
                 Game.currentPlayer = user.id == Game.player.id ? Game.opponent : Game.player;
+                Game.Field.replenishUnits();
+                Game.draw();
 
                 Util.Misc.checkEndTurnButton();
             }

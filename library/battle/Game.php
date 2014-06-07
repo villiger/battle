@@ -236,7 +236,9 @@ class Game
                         'row' => $unit->getRow(),
                         'column' => $unit->getColumn(),
                         'max_life' => $unit->getMaxLife(),
-                        'life' => $unit->getLife()
+                        'life' => $unit->getLife(),
+                        'max_energy' => $unit->getMaxEnergy(),
+                        'energy' => $unit->getEnergy()
                     );
                 }, $this->getField()->getUnits())
             ),

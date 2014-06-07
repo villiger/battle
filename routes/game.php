@@ -47,7 +47,7 @@ $app->post('/game/:id/action/:actionType', function($id, $actionType) use ($app)
         exit;
     } else {
         // Action is not executeable eg. invalid move location
-        $app->response->setStatus(500);
+        $app->response->setStatus(403);
     }
 });
 

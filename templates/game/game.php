@@ -19,6 +19,23 @@
 
 <div class="clearfix"></div>
 
+<div class="modal fade" id="end-game-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h3 class="modal-title" id="end-game-title"></h3>
+            </div>
+            <div class="modal-body">
+                Why not play another match?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     (function() {
         Game.init(<?= $user->getId() ?>, <?= $game->toJson() ?>);
