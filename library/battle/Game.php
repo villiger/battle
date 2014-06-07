@@ -259,12 +259,11 @@ class Game
         // TODO: this could be made faster, without database query.
         $gameBean = Game::getBean($this->getId());
         $lastActions = array_keys($gameBean->xownActionList);
-        if( $lastActions ){
+        if ($lastActions) {
             return Action::load(max($lastActions));
         } else {
             return NULL;
         }
-        
     }
 
     /**
@@ -273,12 +272,11 @@ class Game
     public function getLastActionId()
     {
         $lastAction = $this->getLastAction();
-        if( $lastAction ){
+        if ($lastAction) {
             return $lastAction->getId();
         } else {
             return 0;
         }
-        
     }
 
     /**

@@ -124,7 +124,7 @@ class Field
             foreach( $currentTiles as $tile ){
                 foreach( $variations as $variation ){
                     $newTile = array($tile[0] + $variation[0], $tile[1] + $variation[1]);
-                    if ($this->isEmptyTile($newTile[0], $newTile[1]) && !in_array($newTile, $visitedTiles) ){
+                    if ($this->isValidTile($newTile[0], $newTile[1]) && !in_array($newTile, $visitedTiles) ){
                         $nextTiles[] = $newTile;
                     }
                 }
@@ -141,7 +141,7 @@ class Field
      * @param int $column
      * @return bool
      */
-    public function isEmptyTile($row, $column)
+    public function isValidTile($row, $column)
     {
         if ($row < 0 || $row >= $this->getWidth()) {
             return false;

@@ -64,7 +64,7 @@ class Unit
      */
     public function moveTo($row, $column)
     {
-        if ($this->field->isEmptyTile($row, $column)) {
+        if ($this->field->isValidTile($row, $column)) {
             $this->row = $row;
             $this->column = $column;
 
@@ -83,7 +83,7 @@ class Unit
      */
     public function attackOn($row, $column)
     {
-        if (! $this->field->isEmptyTile($row, $column)) {
+        if ($this->field->isValidTile($row, $column)) {
             // TODO: do the actuel attack
 
             return true;
