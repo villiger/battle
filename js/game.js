@@ -311,32 +311,34 @@ var Game = {
 
             attack: function(unit, row, column, damage) {
                 var target = Game.Field.getUnitByPosition(row, column);
-                target.life = target.life - damage;
-                if (target.life <= 0) {
-                    delete Game.Field.units[target.id];
+                if (target) {
+                    target.life = target.life - damage;
+                    if (target.life <= 0) {
+                        delete Game.Field.units[target.id];
 
-                    // check if the player from who a unit has been snatched
-                    // has any other units on the battlefield
-                    var unitsLeft = false;
-                    for (var unitId in Game.Field.units) {
-                        var unit = Game.Field.units[unitId];
+                        // check if the player from who a unit has been snatched
+                        // has any other units on the battlefield
+                        var unitsLeft = false;
+                        for (var unitId in Game.Field.units) {
+                            var unit = Game.Field.units[unitId];
 
-                        if (unit.user_id != Game.currentPlayer.id) {
-                            unitsLeft = true;
+                            if (unit.user_id != Game.currentPlayer.id) {
+                                unitsLeft = true;
+                            }
+                        }
+
+                        // if not, he has lost the game
+                        if (! unitsLeft) {
+                            $('#end-game-title').html(Game.currentPlayer.name + " has won the game!");
+
+                            $('#end-game-modal').modal().on('hidden.bs.modal', function () {
+                                window.location = '/games';
+                            });
                         }
                     }
 
-                    // if not, he has lost the game
-                    if (! unitsLeft) {
-                        $('#end-game-title').html(Game.currentPlayer.name + " has won the game!");
-
-                        $('#end-game-modal').modal().on('hidden.bs.modal', function () {
-                            window.location = '/games';
-                        });
-                    }
+                    Game.draw();
                 }
-
-                Game.draw();
             },
 
             endTurn: function(user) {
