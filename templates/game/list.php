@@ -24,19 +24,22 @@ function time_since($since) {
     $print = ($count == 1) ? '1 '.$name : "$count {$name}s";
     return $print;
 }
-
 ?>
 
 <ul class="games">
     <?php foreach ($games as $game): /** @var $game \Battle\Game */ ?>
         <?php $opponent = $game->getOpponent($currentUser); ?>
-        <?php //$lastAction = date(DATE_ATOM, $game->getLastAction()->getCreated()); ?>
+        <?php $lastAction = $game->getLastAction(); ?>
         <li>
             <?php if ($opponent): ?>
                 <img class="picture" src="<?= $opponent->getPicture() ?>">
             <?php endif; ?>
             <a href="/game/<?= $game->getId() ?>"><?= $opponent ? $opponent->getName() : '<i>Open game</i>' ?></a>
-            <i><?= time_since(time() - strtotime($game->getLastAction()->getCreated())) ?> ago</i>
+            <i class="timeago">
+                <?php if ($lastAction): ?>
+                    <?= time_since(time() - strtotime($lastAction->getCreated())) ?> ago
+                <?php endif; ?>
+            </i>
         </li>
     <?php endforeach; ?>
 </ul>
