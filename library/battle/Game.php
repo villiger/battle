@@ -18,7 +18,7 @@ class Game
      *
      * @return Game
      */
-    public static function create()
+    public static function create(User $player, User $opponent)
     {
         $seed = mt_rand();
 
@@ -31,8 +31,26 @@ class Game
         $bean->created = \R::isoDateTime();
         \R::store($bean);
 
+
         $id = (int) $bean->getID();
         $game = new Game($id);
+
+        $game->addPlayer($player);
+        $game->addPlayer($opponent);
+
+        $actions = array(
+            Action::create(Action::TYPE_PLACE, $player, $game, array('row' => 0, 'column' => 3)),
+            Action::create(Action::TYPE_PLACE, $player, $game, array('row' => 0, 'column' => 4)),
+            Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 3)),
+            Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 4)),
+        );
+
+        array_walk($actions, function (Action $action) {
+            if ($action->execute()) {
+                $action->store();
+            }
+        });
+
         $game->saveToCache();
 
         return $game;
@@ -122,6 +140,10 @@ class Game
 
             $this->players[$user->getId()] = $user;
 
+            if ($this->currentPlayer == null) {
+                $this->setCurrentPlayer($user);
+            }
+
             $this->saveToCache();
 
             $gameBean = Game::getBean($this->getId());
@@ -170,7 +192,7 @@ class Game
      */
     public function isPlayer(User $user)
     {
-        return array_key_exists($user->getId(), $this->players);
+        return $this->players && array_key_exists($user->getId(), $this->players);
     }
 
     /**
@@ -212,7 +234,9 @@ class Game
                         'id' => $unit->getId(),
                         'user_id' => $unit->getUser()->getId(),
                         'row' => $unit->getRow(),
-                        'column' => $unit->getColumn()
+                        'column' => $unit->getColumn(),
+                        'max_life' => $unit->getMaxLife(),
+                        'life' => $unit->getLife()
                     );
                 }, $this->getField()->getUnits())
             ),

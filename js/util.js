@@ -99,5 +99,15 @@ var Util = {
 
             this.onselect && this.onselect(row, column);
         }
+    },
+
+    Misc: {
+        checkEndTurnButton : function() {
+            if (Game.currentPlayer.id == Game.userId) {
+                $('#end-turn').attr('disabled', null);
+            } else {
+                $('#end-turn').attr('disabled', 'disabled');
+            }
+        }
     }
 };

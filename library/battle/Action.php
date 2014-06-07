@@ -42,8 +42,10 @@ class Action
      * @return Action
      * @throws \Exception
      */
-    public static function create($type, User $user, Game $game, array $payload, $beanId = -1)
+    public static function create($type, User $user, Game $game, $payload, $beanId = -1)
     {
+        $payload = $payload ? $payload : array();
+
 		switch ($type) {
 			case self::TYPE_MESSAGE:
 				return new MessageAction($user, $game, $payload, $beanId);
@@ -257,7 +259,12 @@ class AttackAction extends Action
         $currentPlayer = $this->game->getCurrentPlayer();
 
         if ($this->user->getId() == $currentPlayer->getId()) {
-            return $unit->attackOn($row, $column);
+            $damage = $unit->attackOn($row, $column);
+            if ($damage >= 0) {
+                $this->payload["damage"] = $damage;
+
+                return true;
+            }
         }
 
         return false;

@@ -13,6 +13,8 @@ class Unit
     private $field;
     private $row;
     private $column;
+    private $maxLife;
+    private $life;
 
     public function __construct(Field $field, User $user, $id, $row, $column)
     {
@@ -21,6 +23,9 @@ class Unit
         $this->user = $user;
         $this->row = $row;
         $this->column = $column;
+
+        $this->maxLife = 10;
+        $this->life = $this->maxLife;
     }
 
     /**
@@ -56,6 +61,31 @@ class Unit
     }
 
     /**
+     * @return int
+     */
+    public function getMaxLife()
+    {
+        return $this->maxLife;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLife()
+    {
+        return $this->life;
+    }
+
+    /**
+     * @param int $life
+     */
+    public function setLife($life)
+    {
+        $this->life = $life;
+    }
+
+
+    /**
      * Tries to set the unit to a new position.
      * 
      * @param int $row
@@ -79,16 +109,28 @@ class Unit
      *
      * @param int $row
      * @param int $column
-     * @return bool
+     * @return int
      */
     public function attackOn($row, $column)
     {
         if ($this->field->isValidTile($row, $column)) {
-            // TODO: do the actuel attack
+            $target = $this->field->getUnitByPosition($row, $column);
 
-            return true;
+            if ($target) {
+                $damage = rand(3, 6);
+                $currentLife = $target->getLife();
+                $newLife = $currentLife - $damage;
+
+                $target->setLife($newLife);
+
+                if ($newLife <= 0) {
+                    $this->field->removeUnit($target);
+                }
+
+                return $damage;
+            }
         }
 
-        return false;
+        return -1;
     }
 }

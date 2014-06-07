@@ -50,25 +50,36 @@ body {
   cursor: pointer;
 }
 
-.chat {
+.sidebar {
   float: left;
   background-color: #eee;
   padding: 10px;
 
-  form {
-    .message-input {
-      width: 250px;
-      display: inline-block;
-    }
+  .end-turn {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
   }
 
-  .messages {
-    max-height: 585px;
-    overflow-y: auto;
+  .chat {
+    width: 260px;
 
-    div {
-      font-size: 0.9em;
-      margin-top: 10px;
+    .message-input {
+      display: block;
+    }
+
+    .send-message {
+      width: 30%;
+    }
+
+    .messages {
+      max-height: 500px;
+      overflow-y: auto;
+
+      div {
+        font-size: 0.9em;
+        margin-top: 10px;
+      }
     }
   }
 }

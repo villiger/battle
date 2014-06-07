@@ -87,6 +87,24 @@ class Field
         return $this->units[$id];
     }
 
+
+    /**
+     * @param int $row
+     * @param int $column
+     * @return Unit
+     */
+    public function getUnitByPosition($row, $column)
+    {
+        foreach ($this->units as $unit) {
+            /** @var $unit Unit */
+            if ($unit->getRow() == $row && $unit->getColumn() == $column) {
+                return $unit;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @param int $row
      * @param int $column
@@ -217,5 +235,12 @@ class Field
         }
 
         return false;
+    }
+
+    /**
+     * @param Unit $unit
+     */
+    public function removeUnit(Unit $unit) {
+        unset($this->units[$unit->getId()]);
     }
 }

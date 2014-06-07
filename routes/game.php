@@ -1,6 +1,7 @@
 <?php
 
 use Battle\Action;
+use Battle\User;
 use Battle\Game;
 
 $app->get('/games', function() use ($app) {
@@ -12,32 +13,15 @@ $app->post('/game', function() use ($app) {
     $user = getCurrentUser();
 
     $opponentId = $app->request->post('opponent');
-    $opponent = \Battle\User::load($opponentId);
+    $opponent = User::load($opponentId);
 
-    $game = \Battle\Game::create();
-    $game->addPlayer($user);
-    $game->addPlayer($opponent);
-
-    $actions = array(
-        Action::create(Action::TYPE_PLACE, $user, $game, array('row' => 0, 'column' => 3)),
-        Action::create(Action::TYPE_PLACE, $user, $game, array('row' => 0, 'column' => 4)),
-        Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 3)),
-        Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 4)),
-    );
-
-    array_walk($actions, function (Action $action) {
-        if ($action->execute()) {
-            $action->store();
-        }
-    });
-
-    $game->saveToCache();
+    $game = Game::create($user, $opponent);
 
     $app->redirect('/game/' . $game->getId());
 });
 
 $app->get('/game/:id', function($id) use ($app) {
-    $game = \Battle\Game::load($id);
+    $game = Game::load($id);
     $user = getCurrentUser();
 
     if ($game->isPlayer($user)) {
@@ -52,11 +36,15 @@ $app->post('/game/:id/action/:actionType', function($id, $actionType) use ($app)
     $game = Game::load($id);
     $payload = $app->request->post("payload");
 
-    $action = Action::create($actionType, $user, $game, $payload);
+    $action = Action::create($actionType, $user, $game, $payload ? $payload : array());
 
     if ($action->execute()){
         $action->store();
         $game->saveToCache();
+
+        header("Content-Type: application/json");
+        echo $action->toJson();
+        exit;
     } else {
         // Action is not executeable eg. invalid move location
         $app->response->setStatus(500);

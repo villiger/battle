@@ -51,6 +51,8 @@ var Game = {
             var user = this.players[message.user_id];
             this.Action.Appliers.message(user, message.message);
         }
+
+        Util.Misc.checkEndTurnButton();
     },
 
     draw: function() {
@@ -149,6 +151,25 @@ var Game = {
         drawUnit: function(unit) {
             var type = unit.user_id == Game.userId ? 0 : 1;
             Util.Canvas.drawTile(this.images.units, 0, type, unit.row, unit.column);
+
+            var context = Util.Canvas.context;
+            var tileSize = Util.Canvas.tileSize;
+
+            context.fillStyle = "rgb(0, 0, 0)";
+            context.fillRect(
+                tileSize * unit.column + 15,
+                tileSize * unit.row + (tileSize - 10),
+                tileSize - 30,
+                5
+            );
+
+            context.fillStyle = "rgb(0, 255, 0)";
+            context.fillRect(
+                tileSize * unit.column + 16,
+                tileSize * unit.row + (tileSize - 9),
+                (tileSize - 32) * unit.life / unit.max_life,
+                3
+            );
         },
 
         getUnitById: function(id) {
@@ -196,7 +217,8 @@ var Game = {
                             case 'attack':
                                 var attackerUnit = Game.Field.getUnitById(action.payload.unit_id);
                                 var targetUnit = Game.Field.getUnitByPosition(action.payload.row, action.payload.column);
-                                Game.Action.Appliers.attack(attackerUnit, targetUnit);
+                                var damage = action.payload.damage;
+                                Game.Action.Appliers.attack(attackerUnit, targetUnit, damage);
                                 break;
 
                             case 'end_turn':
@@ -245,8 +267,8 @@ var Game = {
                         row: target.row,
                         column: target.column
                     }
-                }, function () {
-                    Game.Action.Appliers.attack(unit, target.row, target.column);
+                }, function (result) {
+                    Game.Action.Appliers.attack(unit, target.row, target.column, result.payload.damage);
                 });
             },
 
@@ -271,16 +293,20 @@ var Game = {
                 Game.draw();
             },
 
-            attack: function(unit, row, column) {
+            attack: function(unit, row, column, damage) {
                 var target = Game.Field.getUnitByPosition(row, column);
-
-                delete Game.Field.units[target.id];
+                target.life = target.life - damage;
+                if (target.life <= 0) {
+                    delete Game.Field.units[target.id];
+                }
 
                 Game.draw();
             },
 
             endTurn: function(user) {
                 Game.currentPlayer = user.id == Game.player.id ? Game.opponent : Game.player;
+
+                Util.Misc.checkEndTurnButton();
             }
         }
     }

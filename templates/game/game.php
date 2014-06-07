@@ -5,12 +5,16 @@
 
 <canvas id="field" class="field"></canvas>
 
-<div class="chat">
-    <form>
-        <input class="form-control message-input" id="message" type="text">
-        <input class="btn btn-primary" id="send-message" type="button" value="Send">
-    </form>
-    <div id="messages" class="messages"></div>
+<div class="sidebar">
+    <div>
+        <input type="button" class="end-turn btn btn-danger" id="end-turn" value="End Turn">
+    </div>
+    <div class="chat">
+        <form id="chat-form">
+            <input class="form-control message-input" id="message" type="text" placeholder="Enter chat message...">
+        </form>
+        <div id="messages" class="messages"></div>
+    </div>
 </div>
 
 <div class="clearfix"></div>
@@ -19,13 +23,25 @@
     (function() {
         Game.init(<?= $user->getId() ?>, <?= $game->toJson() ?>);
 
-        $('#send-message').on('click', function() {
+        var sendMessage = function() {
             var messageElem = $('#message');
-            var message = messageElem.val();
+            var message = messageElem.val().trim();
 
-            Game.Action.Creators.message(message);
+            if (message.length > 0) {
+                Game.Action.Creators.message(message);
+            }
 
             messageElem.val('');
+        };
+
+        $('#chat-form').on('submit', function(event) {
+            event.preventDefault();
+
+            sendMessage();
+        });
+
+        $('#end-turn').on('click', function() {
+            Game.Action.Creators.endTurn();
         });
     })();
 </script>

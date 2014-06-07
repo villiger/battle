@@ -39,20 +39,30 @@ body {
   margin-right: 20px;
   cursor: pointer;
 }
-.chat {
+.sidebar {
   float: left;
   background-color: #eee;
   padding: 10px;
 }
-.chat form .message-input {
-  width: 250px;
-  display: inline-block;
+.sidebar .end-turn {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
 }
-.chat .messages {
-  max-height: 585px;
+.sidebar .chat {
+  width: 260px;
+}
+.sidebar .chat .message-input {
+  display: block;
+}
+.sidebar .chat .send-message {
+  width: 30%;
+}
+.sidebar .chat .messages {
+  max-height: 500px;
   overflow-y: auto;
 }
-.chat .messages div {
+.sidebar .chat .messages div {
   font-size: 0.9em;
   margin-top: 10px;
 }
