@@ -233,9 +233,8 @@ var Game = {
 
                             case 'attack':
                                 var attackerUnit = Game.Field.getUnitById(action.payload.unit_id);
-                                var targetUnit = Game.Field.getUnitByPosition(action.payload.row, action.payload.column);
                                 var damage = action.payload.damage;
-                                Game.Action.Appliers.attack(attackerUnit, targetUnit, damage);
+                                Game.Action.Appliers.attack(attackerUnit, action.payload.row, action.payload.column, damage);
                                 break;
 
                             case 'end_turn':
