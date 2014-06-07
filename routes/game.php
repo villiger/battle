@@ -1,6 +1,7 @@
 <?php
 
 use Battle\Action;
+use Battle\Game;
 
 $app->get('/games', function() use ($app) {
     $user = getCurrentUser();
@@ -24,13 +25,11 @@ $app->post('/game', function() use ($app) {
         Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 4)),
     );
 
-    foreach ($actions as $action) {
-        /** @var $action Action */
+    array_walk($actions, function (Action $action) {
         if ($action->execute()) {
             $action->store();
         }
-    }
-
+    });
 
     $game->saveToCache();
 
@@ -48,51 +47,33 @@ $app->get('/game/:id', function($id) use ($app) {
     }
 });
 
-$app->post('/game/:id/action', function($gameId) use ($app) {
-    try {
-        $payload = json_decode($app->request->params("payload"), true);
+$app->post('/game/:id/action/:actionType', function($id, $actionType) use ($app) {
+    $user = getCurrentUser();
+    $game = Game::load($id);
+    $payload = $app->request->post("payload");
 
-        // Is there a safer way to get the player? This way it is easily trickable.
-        $action = \Battle\Action::create($app->request->params("type"), $app->request->params("playerId"), $gameId, $payload);
+    $action = Action::create($actionType, $user, $game, $payload);
 
-        if( $action->execute() ){
-            $action->store();
-        } else {
-            // Action is not executeable eg. invalid move location
-            $app->response->setStatus(500);
-        }
-    } catch(Exception $e) {
-        // @TODO: Remove! Only for dev purposes
-        echo( $e->getTraceAsString() );
-        // most probably wrong format or missing data
-        $app->response->setStatus(400);
+    if ($action->execute()){
+        $action->store();
+        $game->saveToCache();
+    } else {
+        // Action is not executeable eg. invalid move location
+        $app->response->setStatus(500);
     }
 });
 
-$app->get('/game/:id/action/dummy', function($gameId) use ($app) {
-    // This is just a dummy route to create some actions :)
+$app->get('/game/:id/action/:lastActionId', function($id, $lastActionId) use ($app) {
+    $game = Game::load($id);
 
-	//$action = \Battle\Action::create(\Battle\Action::TYPE_MESSAGE, 1, $gameId, array("message" => "New World!"));
-    $action = \Battle\Action::create(\Battle\Action::TYPE_ATTACK, 2, $gameId, array("unitId" => 777, "targetRow" => 4, "targetColumn" => 1));
-    $action->store();
+    $actions = array_map(function (Action $action) {
+        return $action->toArray();
+    }, $game->getNewActions($lastActionId));
 
-});
-
-$app->get('/game/:id/action/:last', function($gameId, $lastActionId) use ($app) {
-    $actions = \Battle\Action::getNewActions($gameId, $lastActionId);
-
-    # Check if logged in and player of this game in particular
-
-    $encActions = array();
-    foreach( $actions as $action ){
-    	$encActions[] = $action->serialize();
-    	//var_dump($action->serialize());
-    }
-
-    $response = $app->response();
-    $response['Content-Type'] = "application/json";
-    $response->body(json_encode($encActions));
-
-    // Needs an exit?! http://stackoverflow.com/questions/14150595/slim-php-returning-json
-    // exit();
+    header("Content-Type: application/json");
+    echo json_encode(array(
+        'last_action_id' => $game->getLastActionId(),
+        'actions' => $actions
+    ));
+    exit;
 });

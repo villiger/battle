@@ -10,6 +10,7 @@ class Action
 	const TYPE_PLACE = 'place';
     const TYPE_MOVE = 'move';
     const TYPE_ATTACK = 'attack';
+    const TYPE_END_TURN = 'end_turn';
 
     protected $id;
     protected $type;
@@ -19,7 +20,7 @@ class Action
 
     /**
      * @param int $id
-     * @return AttackAction|MessageAction|MoveAction|PlaceAction
+     * @return Action
      */
     public static function load($id)
     {
@@ -37,8 +38,8 @@ class Action
      * @param User $user
      * @param Game $game
      * @param array $payload
-     * @param int beanId may not yet exist
-     * @return AttackAction|MessageAction|MoveAction|PlaceAction
+     * @param int $beanId may not yet exist
+     * @return Action
      * @throws \Exception
      */
     public static function create($type, User $user, Game $game, array $payload, $beanId = -1)
@@ -52,6 +53,8 @@ class Action
                 return new MoveAction($user, $game, $payload, $beanId);
 			case self::TYPE_ATTACK:
 				return new AttackAction($user, $game, $payload, $beanId);
+            case self::TYPE_END_TURN:
+                return new EndTurnAction($user, $game, $payload, $beanId);
 			default:
 				throw new \Exception("Invalid type '$type' given!");
 		}
@@ -76,18 +79,28 @@ class Action
     }
 
     /**
+     * Return this action as an assoc array.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return array(
+            "type" => $this->type,
+            "user_id" => $this->user->getId(),
+            "game_id" => $this->game->getId(),
+            "payload" => $this->payload
+        );
+    }
+
+    /**
      * Returns a JSON representation of this action.
      *
      * @return string
      */
     public function toJson()
     {
-        return json_encode(array(
-            "type" => $this->type,
-            "user_id" => $this->user->getId(),
-            "game_id" => $this->game->getId(),
-            "payload" => $this->payload
-        ));
+        return json_encode($this->toArray());
     }
 
     /**
@@ -172,18 +185,16 @@ class Action
 
 class MessageAction extends Action
 {
-	private $message;
-
 	public function __construct(User $user, Game $game, array $payload, $beanId)
     {
 		parent::__construct(self::TYPE_MESSAGE, $user, $game, $payload, $beanId);
-
-		$this->message = $payload["message"];
 	}
 
 	public function execute()
     {
-		$this->game->addMessage($this->user, $this->message);
+        $message = $this->payload["message"];
+
+		$this->game->addMessage($this->user, $message);
 
 		return true;
 	}
@@ -191,65 +202,86 @@ class MessageAction extends Action
 
 class PlaceAction extends Action
 {
-    private $row;
-    private $column;
-
     public function __construct(User $user, Game $game, array $payload, $beanId)
     {
         parent::__construct(self::TYPE_PLACE, $user, $game, $payload, $beanId);
-
-        $this->row = $payload["row"];
-        $this->column = $payload["column"];
     }
 
     public function execute()
     {
-        return $this->game->getField()->createUnit($this->user, $this->row, $this->column);
+        $row = (int) $this->payload["row"];
+        $column = (int) $this->payload["column"];
+
+        return $this->game->getField()->createUnit($this->user, $row, $column);
     }
 }
 
 class MoveAction extends Action
 {
-    private $unit;
-    private $row;
-    private $column;
-
     public function __construct(User $user, Game $game, array $payload, $beanId)
     {
         parent::__construct(self::TYPE_MOVE, $user, $game, $payload, $beanId);
-
-        $unitId = (int) $payload["unit_id"];
-
-        $this->unit = $this->game->getField()->getUnit($unitId);
-        $this->row = (int) $payload["row"];
-        $this->column = (int) $payload["column"];
     }
 
     public function execute()
     {
-        return $this->unit->moveTo($this->row, $this->column);
+        $unitId = (int) $this->payload["unit_id"];
+        $row = (int) $this->payload["row"];
+        $column = (int) $this->payload["column"];
+
+        $unit = $this->game->getField()->getUnit($unitId);
+        $currentPlayer = $this->game->getCurrentPlayer();
+
+        if ($this->user->getId() == $currentPlayer->getId()) {
+            return $unit->moveTo($row, $column);
+        }
+
+        return false;
     }
 }
 
 class AttackAction extends Action
 {
-	private $unit;
-	private $row;
-	private $column;
-
 	public function __construct(User $user, Game $game, array $payload, $beanId)
     {
 		parent::__construct(self::TYPE_ATTACK, $user, $game, $payload, $beanId);
-
-        $unitId = (int) $payload["unit_id"];
-
-        $this->unit = $this->game->getField()->getUnit($unitId);
-		$this->row = (int) $payload["row"];
-		$this->column = (int) $payload["column"];
 	}
 
 	public function execute()
     {
-        return $this->unit->attackOn($this->row, $this->column);
+        $unitId = (int) $this->payload["unit_id"];
+        $row = (int) $this->payload["row"];
+        $column = (int) $this->payload["column"];
+
+        $unit = $this->game->getField()->getUnit($unitId);
+        $currentPlayer = $this->game->getCurrentPlayer();
+
+        if ($this->user->getId() == $currentPlayer->getId()) {
+            return $unit->attackOn($row, $column);
+        }
+
+        return false;
 	}
+}
+
+class EndTurnAction extends Action
+{
+    public function __construct(User $user, Game $game, array $payload, $beanId)
+    {
+        parent::__construct(self::TYPE_END_TURN, $user, $game, $payload, $beanId);
+    }
+
+    public function execute()
+    {
+        $currentPlayer = $this->game->getCurrentPlayer();
+
+        if ($this->user->getId() == $currentPlayer->getId()) {
+            $opponent = $this->game->getOpponent($currentPlayer);
+            $this->game->setCurrentPlayer($opponent);
+
+            return true;
+        }
+
+        return false;
+    }
 }

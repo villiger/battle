@@ -10,10 +10,6 @@ body {
   padding: 50px 0;
   color: black;
 }
-.field {
-  margin: 20px 0;
-  cursor: pointer;
-}
 .friends,
 .games {
   margin: 0;
@@ -34,4 +30,26 @@ body {
 .friends li .play,
 .games li .play {
   margin-left: 10px;
+}
+.field {
+  float: left;
+  margin-right: 20px;
+  cursor: pointer;
+}
+.chat {
+  float: left;
+  background-color: #eee;
+  padding: 10px;
+}
+.chat form .message-input {
+  width: 250px;
+  display: inline-block;
+}
+.chat .messages {
+  max-height: 585px;
+  overflow-y: auto;
+}
+.chat .messages div {
+  font-size: 0.9em;
+  margin-top: 10px;
 }

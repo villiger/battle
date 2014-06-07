@@ -86,21 +86,24 @@ class Game
         // Set random seed to generate the field accordingly
         mt_srand((int) $bean->seed);
 
-        $this->currentPlayer = 1;
         $this->messages = array();
 
         $this->field = new Field($this, (int) $bean->field_width, (int) $bean->field_height);
 
-        $this->players = array_map(function ($userBean) {
-            /** @var $userBean OODBBean */
-            return new User($userBean->getID());
-        }, array_values($bean->sharedUserList));
+        $this->players = array_map(function (OODBBean $userBean) {
+            $user = new User($userBean->getID());
+
+            if ($this->currentPlayer == null) {
+                $this->setCurrentPlayer($user);
+            }
+
+            return $user;
+        }, $bean->sharedUserList);
 
         $actions = $this->getActions();
-        foreach ($actions as $action) {
-            /** @var $action Action */
+        array_walk($actions, function (Action $action) {
             $action->execute();
-        }
+        });
     }
 
     /**
@@ -117,7 +120,7 @@ class Game
                 }
             }
 
-            $this->players[] = $user;
+            $this->players[$user->getId()] = $user;
 
             $this->saveToCache();
 
@@ -134,7 +137,7 @@ class Game
      */
     public function getId()
     {
-        return $this->id;
+        return (int) $this->id;
     }
 
     /**
@@ -146,6 +149,20 @@ class Game
     }
 
     /**
+     * @return User
+     */
+    public function getCurrentPlayer() {
+        return $this->currentPlayer;
+    }
+
+    /**
+     * @param User $player
+     */
+    public function setCurrentPlayer(User $player) {
+        $this->currentPlayer = $player;
+    }
+
+    /**
      * Check if a particular user is a player of this game.
      *
      * @param User $user
@@ -153,14 +170,7 @@ class Game
      */
     public function isPlayer(User $user)
     {
-        foreach ($this->players as $player) {
-            /** @var $player User */
-            if ($player->getId() == $user->getId()) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_key_exists($user->getId(), $this->players);
     }
 
     /**
@@ -192,6 +202,7 @@ class Game
     public function toJson()
     {
         $state = array(
+            'id' => $this->getId(),
             'field' => array(
                 'width' => $this->getField()->getWidth(),
                 'height' => $this->getField()->getHeight(),
@@ -212,7 +223,7 @@ class Game
                     'picture' => $player->getPicture()
                 );
             }, $this->players),
-            'current_player' => $this->currentPlayer,
+            'current_player_id' => $this->currentPlayer->getId(),
             'messages' => $this->messages,
             'last_action_id' => $this->getLastActionId()
         );
@@ -278,7 +289,7 @@ class Game
     public function getActions()
     {
         $gameBean = Game::getBean($this->getId());
-        $actionBeans = $gameBean->xownActionList;
+        $actionBeans = $gameBean->with('ORDER BY action.id ASC')->xownActionList;
 
         $actions = array();
         foreach ($actionBeans as $actionBean){
@@ -300,7 +311,7 @@ class Game
     public function getNewActions($lastActionId)
     {
         $gameBean = Game::getBean($this->getId());
-        $actionBeans = $gameBean->withCondition('id > ?', [ $lastActionId ])->xownActionList;
+        $actionBeans = $gameBean->withCondition('action.id > ? ORDER BY action.id ASC', [ $lastActionId ])->xownActionList;
 
         $actions = array();
         foreach ($actionBeans as $actionBean){
