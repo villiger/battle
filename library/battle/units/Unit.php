@@ -110,7 +110,7 @@ class Unit
      */
     public function setEnergy($energy)
     {
-        $this->life = $energy;
+        $this->energy = $energy;
     }
 
     /**

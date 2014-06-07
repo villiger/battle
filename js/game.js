@@ -316,6 +316,8 @@ var Game = {
                 if (target.life <= 0) {
                     delete Game.Field.units[target.id];
 
+                    // check if the player from who a unit has been snatched
+                    // has any other units on the battlefield
                     var unitsLeft = false;
                     for (var unitId in Game.Field.units) {
                         var unit = Game.Field.units[unitId];
@@ -325,6 +327,7 @@ var Game = {
                         }
                     }
 
+                    // if not, he has lost the game
                     if (! unitsLeft) {
                         $('#end-game-title').html(Game.currentPlayer.name + " has won the game!");
 
