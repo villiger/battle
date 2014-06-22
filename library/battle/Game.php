@@ -237,8 +237,10 @@ class Game
                         'column' => $unit->getColumn(),
                         'max_life' => $unit->getMaxLife(),
                         'life' => $unit->getLife(),
-                        'max_energy' => $unit->getMaxEnergy(),
-                        'energy' => $unit->getEnergy()
+                        'move_range' => $unit->getMoveRange(),
+                        'attack_range' => $unit->getAttackRange(),
+                        'has_moved' => $unit->hasMoved(),
+                        'has_attacked' => $unit->hasAttacked()
                     );
                 }, $this->getField()->getUnits())
             ),

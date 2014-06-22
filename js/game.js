@@ -172,20 +172,28 @@ var Game = {
             );
 
             if (Game.currentPlayer.id == unit.user_id) {
-                context.fillStyle = "rgb(255, 255, 255)";
-                context.font = "12px sans-serif";
-                context.fillText(
-                    unit.energy,
-                    tileSize * unit.column + tileSize - 21,
-                    tileSize * unit.row + tileSize - 12
-                );
+                if (unit.has_attacked) {
+                    context.fillStyle = "rgb(255, 0, 0)";
+                } else if (unit.has_moved) {
+                    context.fillStyle = "rgb(0, 0, 255)";
+                } else {
+                    context.fillStyle = "rgb(0, 255, 0)";
+                }
+
+                var x = tileSize * unit.column + tileSize - 12.5;
+                var y = tileSize * unit.row + 12.5;
+
+                context.beginPath();
+                context.arc(x, y, 2.5, 0, 2 * Math.PI);
+                context.fill();
             }
         },
 
         replenishUnits: function() {
             for (var unitId in this.units) {
                 var unit = this.units[unitId];
-                unit.energy = unit.max_energy;
+                unit.has_moved = false;
+                unit.has_attacked = false;
             }
         },
 
@@ -306,12 +314,16 @@ var Game = {
                 unit.row = row;
                 unit.column = column;
 
+                unit.has_moved = true;
+
                 Game.draw();
             },
 
             attack: function(unit, row, column, damage) {
                 var target = Game.Field.getUnitByPosition(row, column);
                 if (target) {
+                    unit.has_attacked = true;
+
                     target.life = target.life - damage;
                     if (target.life <= 0) {
                         delete Game.Field.units[target.id];

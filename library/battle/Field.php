@@ -155,22 +155,26 @@ class Field
     }
 
     /**
+     * Check if the tile is a valid target for either moving or attacking.
+     *
      * @param int $row
      * @param int $column
      * @return bool
      */
     public function isValidTile($row, $column)
     {
+        // check upper and lower bound of the field
         if ($row < 0 || $row >= $this->getWidth()) {
             return false;
         }
 
+        // check left and right bound of the field
         if ($column < 0 || $column >= $this->getHeight()) {
             return false;
         }
 
+        // check if tile is a mountain or water
         $tile = $this->getTile($row, $column);
-
         if ($tile == self::TILE_MOUNTAIN || $tile == self::TILE_WATER) {
             return false;
         }
@@ -257,7 +261,7 @@ class Field
     public function replenishUnits()
     {
         array_walk($this->units, function (Unit &$unit) {
-            $unit->setEnergy($unit->getMaxEnergy());
+            $unit->replenish();
         });
     }
 }

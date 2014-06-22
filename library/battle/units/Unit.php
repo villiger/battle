@@ -15,8 +15,10 @@ class Unit
     private $column;
     private $maxLife;
     private $life;
-    private $maxEnergy;
-    private $energy;
+    private $moveRange;
+    private $attackRange;
+    private $hasMoved;
+    private $hasAttacked;
 
     public function __construct(Field $field, User $user, $id, $row, $column)
     {
@@ -29,8 +31,11 @@ class Unit
         $this->maxLife = 10;
         $this->life = $this->maxLife;
 
-        $this->maxEnergy = 3;
-        $this->energy = $this->maxEnergy;
+        $this->moveRange = 3;
+        $this->attackRange = 1;
+
+        $this->hasMoved = false;
+        $this->hasAttacked = false;
     }
 
     /**
@@ -92,25 +97,43 @@ class Unit
     /**
      * @return int
      */
-    public function getMaxEnergy()
+    public function getMoveRange()
     {
-        return $this->maxEnergy;
+        return $this->moveRange;
+    }
+
+    /**
+     * @param int $range
+     */
+    public function setMoveRange($range)
+    {
+        $this->moveRange = $range;
     }
 
     /**
      * @return int
      */
-    public function getEnergy()
+    public function getAttackRange()
     {
-        return $this->energy;
+        return $this->attackRange;
     }
 
     /**
-     * @param int $energy
+     * @param int $range
      */
-    public function setEnergy($energy)
+    public function setAttackRange($range)
     {
-        $this->energy = $energy;
+        $this->attackRange = $range;
+    }
+
+    public function hasMoved()
+    {
+        return $this->hasMoved;
+    }
+
+    public function hasAttacked()
+    {
+        return $this->hasAttacked;
     }
 
     /**
@@ -122,10 +145,16 @@ class Unit
      */
     public function moveTo($row, $column)
     {
+        if ($this->hasMoved() || $this->hasAttacked()) {
+            return false;
+        }
+
         if ($this->field->isValidTile($row, $column)) {
             if (! $this->field->getUnitByPosition($row, $column)) {
                 $this->row = $row;
                 $this->column = $column;
+
+                $this->hasMoved = true;
 
                 return true;
             }
@@ -143,10 +172,16 @@ class Unit
      */
     public function attackOn($row, $column)
     {
+        if ($this->hasAttacked()) {
+            return false;
+        }
+
         if ($this->field->isValidTile($row, $column)) {
             $target = $this->field->getUnitByPosition($row, $column);
 
             if ($target) {
+                $this->hasAttacked = true;
+
                 $damage = rand(3, 6);
                 $currentLife = $target->getLife();
                 $newLife = $currentLife - $damage;
@@ -162,5 +197,14 @@ class Unit
         }
 
         return -1;
+    }
+
+    /**
+     * Makes the unit ready for the next turn.
+     */
+    public function replenish()
+    {
+        $this->hasMoved = false;
+        $this->hasAttacked = false;
     }
 }
