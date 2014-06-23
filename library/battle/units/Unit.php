@@ -31,8 +31,8 @@ class Unit
         $this->maxLife = 10;
         $this->life = $this->maxLife;
 
-        $this->moveRange = 5;
-        $this->attackRange = 5;
+        $this->moveRange = 4;
+        $this->attackRange = 1;
 
         $this->hasMoved = false;
         $this->hasAttacked = false;

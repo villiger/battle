@@ -139,7 +139,7 @@ Path.prototype._findPath = function(maxRange) {
         if (lowestPos) {
             currentPosition = lowestPos;
 
-            var fieldInfo = Game.Field.getTileInfo(currentPosition.row, currentPosition.column);
+            var fieldInfo = this.field[currentPosition.row][currentPosition.column];
             if (fieldInfo == Game.Field.INFO_FREE) {
                 result.push(lowestPos);
             }

@@ -69,6 +69,8 @@ var Game = {
     },
 
     onselect: function(row, column) {
+        if (Game.currentPlayer.id != Game.player.id) return;
+
         var selection = {
             row: row,
             column: column
@@ -112,25 +114,43 @@ var Game = {
 
             var fromUnit = this.Field.selectedUnit;
 
-            if (fromUnit && fromUnit.user_id == this.userId && ! (fromUnit.has_moved || fromUnit.has_attacked)) {
+            if (fromUnit && fromUnit.user_id == this.userId && ! fromUnit.has_attacked) {
                 var sourceRow = this.Field.selectedUnit.row;
                 var sourceColumn = this.Field.selectedUnit.column;
 
                 var toUnit = this.Field.getUnitByPosition(row, column);
                 var mouseOverTarget = toUnit && toUnit.user_id != Game.userId;
 
-                var path = new Path(sourceRow, sourceColumn, row, column);
-                var result = path.calculate(fromUnit.move_range);
+                if (fromUnit.has_moved && ! mouseOverTarget) {
+                    this.draw();
+                    this.currentPath = [];
+                } else {
+                    // mouseOverTarget: ignore obstacles to calculate attack
+                    var range = mouseOverTarget ? fromUnit.attack_range : fromUnit.move_range;
+                    var path = new Path(sourceRow, sourceColumn, row, column, mouseOverTarget);
+                    var result = path.calculate(range);
 
-                this.draw();
+                    this.draw();
 
-                if (result.length > 0) {
-                    for (var i = result.length - 1; i >= 0; i--) {
-                        Util.Canvas.drawTile(this.images.ui, 0, 1, result[i].row, result[i].column);
+                    console.log(path, result, range);
+
+                    if (result.length > 0) {
+                        if (mouseOverTarget) {
+                            // if we target something, we just draw the "sword" icon on the target
+                            Util.Canvas.drawTile(this.images.ui, 0, 2, result[result.length - 1].row, result[result.length - 1].column);
+                        } else {
+                            // if we want to move, we draw movement points along the way
+                            for (var i = 0; i < result.length; i++) {
+                                Util.Canvas.drawTile(this.images.ui, 0, 1, result[i].row, result[i].column);
+                            }
+                        }
                     }
-                }
 
-                this.currentPath = result;
+                    this.currentPath = result;
+                }
+            } else {
+                this.draw();
+                this.currentPath = [];
             }
         }
     },
@@ -330,6 +350,7 @@ var Game = {
             move: function(unit, row, column) {
                 if (! Game.isCurrentPlayer()) return;
                 if (Game.userId != unit.user_id) return;
+                if (! Game.currentPath || Game.currentPath.length <= 0) return;
 
                 $.post('/game/' + Game.id + '/action/move', {
                     payload: {
@@ -350,6 +371,7 @@ var Game = {
                 if (! Game.isCurrentPlayer()) return;
                 if (Game.userId != unit.user_id) return;
                 if (unit.user_id == target.user_id) return;
+                if (! Game.currentPath || Game.currentPath.length <= 0) return;
 
                 $.post('/game/' + Game.id + '/action/attack', {
                     payload: {
@@ -428,6 +450,11 @@ var Game = {
             endTurn: function(user) {
                 Game.currentPlayer = user.id == Game.player.id ? Game.opponent : Game.player;
                 Game.Field.replenishUnits();
+
+                Game.selection = null;
+                Game.Field.selectedUnit = null;
+                Game.currentPath = [];
+
                 Game.draw();
 
                 Util.Misc.checkEndTurnButton();
