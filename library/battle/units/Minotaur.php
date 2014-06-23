@@ -20,7 +20,7 @@ class Minotaur extends Unit
 
     public function getMaxLife()
     {
-        return 20;
+        return 18;
     }
 
     public function getMoveRange()

@@ -20,7 +20,7 @@ class Juggernaut extends Unit
 
     public function getMaxLife()
     {
-        return 40;
+        return 28;
     }
 
     public function getMoveRange()
