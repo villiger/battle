@@ -8,6 +8,8 @@ var Game = {
     id: null,
     userId: null,
     selection: null,
+    mouseRow: -1,
+    mouseColumn: -1,
     images: {},
     currentPlayer: null,
     player: null,
@@ -40,8 +42,9 @@ var Game = {
 
         Util.Image.onloaded = this.draw.bind(this);
         Util.Canvas.onselect = this.onselect.bind(this);
+        Util.Canvas.onmousemove = this.onmousemove.bind(this);
 
-        this.images.selection = Util.Image.load('/img/selection.png');
+        this.images.ui = Util.Image.load('/img/ui.png');
 
         this.Field.init();
         this.Action.init();
@@ -60,7 +63,7 @@ var Game = {
 
         // if we have a selection, we draw the selection image
         if (this.selection) {
-            Util.Canvas.drawTile(this.images.selection, 0, 0, this.selection.row, this.selection.column);
+            Util.Canvas.drawTile(this.images.ui, 0, 0, this.selection.row, this.selection.column);
         }
     },
 
@@ -92,12 +95,38 @@ var Game = {
                     this.Action.Creators.move(this.Field.selectedUnit, row, column);
                 } else {
                     this.Field.selectedUnit = null;
+                    this.selection = null;
                 }
             }
         }
 
         // re-draw the game after selection
         this.draw();
+    },
+
+    onmousemove: function(row, column) {
+        if (row != this.mouseRow || column != this.mouseColumn) {
+            this.mouseRow = row;
+            this.mouseColumn = column;
+
+            this.draw();
+
+            var unit = this.Field.selectedUnit;
+
+            if (unit && unit.user_id == this.userId && ! (unit.has_moved || unit.has_attacked)) {
+                var sourceRow = this.Field.selectedUnit.row;
+                var sourceColumn = this.Field.selectedUnit.column;
+
+                var path = new Path(sourceRow, sourceColumn, row, column);
+                var result = path.calculate(this.Field.selectedUnit.move_range + 10);
+
+                if (result.length > 0) {
+                    for (var i = 0; i < result.length; i++) {
+                        Util.Canvas.drawTile(this.images.ui, 0, 1, result[i].row, result[i].column);
+                    }
+                }
+            }
+        }
     },
 
     isCurrentPlayer: function() {
@@ -117,6 +146,12 @@ var Game = {
         TILE_WATER: 2,
         TILE_MOUNTAIN: 3,
         TILE_DESERT: 4,
+
+        INFO_INVALID: "invalid",
+        INFO_BLOCKED: "blocked",
+        INFO_FREE: "free",
+        INFO_ENEMY_UNIT: "enemy",
+        INFO_MY_UNIT: "my",
 
         init: function() {
             this.images.grass = Util.Image.load('/img/field/grass.png');
@@ -210,6 +245,27 @@ var Game = {
             }
 
             return null;
+        },
+
+        getTileInfo: function(row, column) {
+            if (row < 0 || row >= this.height) {
+                return this.INFO_INVALID;
+            } else if (column < 0 || column >= this.width) {
+                return this.INFO_INVALID;
+            } else if (this.tiles[row][column] == this.TILE_MOUNTAIN || this.tiles[row][column] == this.TILE_WATER) {
+                return this.INFO_BLOCKED;
+            } else {
+                var unit = this.getUnitByPosition(row, column);
+                if (unit) {
+                    if (unit.user_id == Game.userId) {
+                        return this.INFO_MY_UNIT;
+                    } else {
+                        return this.INFO_ENEMY_UNIT;
+                    }
+                } else {
+                    return this.INFO_FREE;
+                }
+            }
         }
     },
 
@@ -277,6 +333,10 @@ var Game = {
                     }
                 }, function () {
                     Game.Action.Appliers.move(unit, row, column);
+                }).fail(function() {
+                    Game.Field.selectedUnit = null;
+                    Game.selection = null;
+                    Game.draw();
                 });
             },
 

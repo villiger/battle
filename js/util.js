@@ -36,6 +36,7 @@ var Util = {
         canvas: null,
         context: null,
         onselect: null,
+        onmousemove: null,
 
         tileBaseSize: 16,
         tileScale: 5,
@@ -51,6 +52,7 @@ var Util = {
             // listen to click/touch events
             this.canvas.addEventListener('mousedown', this._onmousedown.bind(this), false);
             this.canvas.addEventListener('touchstart', this._ontouchstart.bind(this), false);
+            this.canvas.addEventListener('mousemove', this._onmousemove.bind(this), false);
 
             this.context = this.canvas.getContext('2d');
 
@@ -98,6 +100,19 @@ var Util = {
             var column = Math.floor(x / this.tileSize);
 
             this.onselect && this.onselect(row, column);
+        },
+
+        _onmousemove: function(event) {
+            // get relative coordinates to canvas origin
+            var rect = this.canvas.getBoundingClientRect();
+            var x = event.x - rect.left;
+            var y = event.y - rect.top;
+
+            // calculate which row and column got clicked
+            var row = Math.floor(y / this.tileSize);
+            var column = Math.floor(x / this.tileSize);
+
+            this.onmousemove && this.onmousemove(row, column);
         }
     },
 

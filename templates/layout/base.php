@@ -9,6 +9,7 @@
     <script src="/js/lib/bootstrap.min.js"></script>
     <script src="/js/util.js"></script>
     <script src="/js/game.js"></script>
+    <script src="/js/path.js"></script>
     <script>
         // eliminate the #_=_ by Facebook
         if (window.location.hash && window.location.hash === "#_=_") {
