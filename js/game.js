@@ -210,8 +210,7 @@ var Game = {
         },
 
         drawUnit: function(unit) {
-            var type = unit.user_id == Game.userId ? 0 : 1;
-            Util.Canvas.drawTile(this.images.units, 0, type, unit.row, unit.column);
+            Util.Canvas.drawTile(this.images.units, 0, unit.type, unit.row, unit.column);
 
             var context = Util.Canvas.context;
             var tileSize = Util.Canvas.tileSize;

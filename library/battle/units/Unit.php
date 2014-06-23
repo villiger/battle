@@ -6,19 +6,36 @@ use Battle;
 use Battle\Field;
 use Battle\User;
 
-class Unit
+abstract class Unit
 {
+    const TYPE_FIGHTER = 0;
+    const TYPE_JUGGERNAUT = 1;
+    const TYPE_ARCHER = 2;
+    const TYPE_MINOTAUR = 3;
+
     private $id;
     private $user;
     private $field;
     private $row;
     private $column;
-    private $maxLife;
     private $life;
-    private $moveRange;
-    private $attackRange;
     private $hasMoved;
     private $hasAttacked;
+
+    public static function create(Field $field, User $user, $id, $row, $column, $type) {
+        switch ($type) {
+            case self::TYPE_FIGHTER:
+                return new Fighter($field, $user, $id, $row, $column);
+            case self::TYPE_JUGGERNAUT:
+                return new Juggernaut($field, $user, $id, $row, $column);
+            case self::TYPE_ARCHER:
+                return new Archer($field, $user, $id, $row, $column);
+            case self::TYPE_MINOTAUR:
+                return new Minotaur($field, $user, $id, $row, $column);
+            default:
+                throw new \Exception("No unit with type $type available.");
+        }
+    }
 
     public function __construct(Field $field, User $user, $id, $row, $column)
     {
@@ -28,11 +45,7 @@ class Unit
         $this->row = $row;
         $this->column = $column;
 
-        $this->maxLife = 10;
-        $this->life = $this->maxLife;
-
-        $this->moveRange = 4;
-        $this->attackRange = 1;
+        $this->life = $this->getMaxLife();
 
         $this->hasMoved = false;
         $this->hasAttacked = false;
@@ -73,10 +86,32 @@ class Unit
     /**
      * @return int
      */
-    public function getMaxLife()
-    {
-        return $this->maxLife;
-    }
+    public abstract function getType();
+
+    /**
+     * @return int
+     */
+    public abstract function getMaxLife();
+
+    /**
+     * @return int
+     */
+    public abstract function getMoveRange();
+
+    /**
+     * @return int
+     */
+    public abstract function getAttackRange();
+
+    /**
+     * @return int
+     */
+    public abstract function getMinDamage();
+
+    /**
+     * @return int
+     */
+    public abstract function getMaxDamage();
 
     /**
      * @return int
@@ -92,38 +127,6 @@ class Unit
     public function setLife($life)
     {
         $this->life = $life;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMoveRange()
-    {
-        return $this->moveRange;
-    }
-
-    /**
-     * @param int $range
-     */
-    public function setMoveRange($range)
-    {
-        $this->moveRange = $range;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAttackRange()
-    {
-        return $this->attackRange;
-    }
-
-    /**
-     * @param int $range
-     */
-    public function setAttackRange($range)
-    {
-        $this->attackRange = $range;
     }
 
     public function hasMoved()
@@ -182,7 +185,7 @@ class Unit
             if ($target) {
                 $this->hasAttacked = true;
 
-                $damage = rand(3, 6);
+                $damage = rand($this->getMinDamage(), $this->getMaxDamage());
                 $currentLife = $target->getLife();
                 $newLife = $currentLife - $damage;
 

@@ -50,6 +50,10 @@ require_once 'library/battle/Field.php';
 require_once 'library/battle/Action.php';
 require_once 'library/battle/User.php';
 require_once 'library/battle/units/Unit.php';
+require_once 'library/battle/units/Fighter.php';
+require_once 'library/battle/units/Juggernaut.php';
+require_once 'library/battle/units/Archer.php';
+require_once 'library/battle/units/Minotaur.php';
 
 session_start();
 

@@ -231,13 +231,15 @@ class Field
      * @param User $player
      * @param int $row
      * @param int $column
+     * @param int $type
      * @return bool
      */
-    public function createUnit(User $player, $row, $column)
+    public function createUnit(User $player, $row, $column, $type)
     {
         if ($this->game->isPlayer($player)) {
             $unitId = ++$this->lastUnitId;
-            $unit = new Unit($this, $player, $unitId, $row, $column);
+
+            $unit = Unit::create($this->game->getField(), $player, $unitId, $row, $column, $type);
 
             $this->units[$unitId] = $unit;
 

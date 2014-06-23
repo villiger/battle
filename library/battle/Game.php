@@ -39,10 +39,14 @@ class Game
         $game->addPlayer($opponent);
 
         $actions = array(
-            Action::create(Action::TYPE_PLACE, $player, $game, array('row' => 0, 'column' => 3)),
-            Action::create(Action::TYPE_PLACE, $player, $game, array('row' => 0, 'column' => 4)),
-            Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 3)),
-            Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 4)),
+            Action::create(Action::TYPE_PLACE, $player, $game, array('row' => 0, 'column' => 2, 'type' => Unit::TYPE_ARCHER)),
+            Action::create(Action::TYPE_PLACE, $player, $game, array('row' => 0, 'column' => 3, 'type' => Unit::TYPE_FIGHTER)),
+            Action::create(Action::TYPE_PLACE, $player, $game, array('row' => 0, 'column' => 4, 'type' => Unit::TYPE_FIGHTER)),
+            Action::create(Action::TYPE_PLACE, $player, $game, array('row' => 0, 'column' => 5, 'type' => Unit::TYPE_ARCHER)),
+            Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 2, 'type' => Unit::TYPE_MINOTAUR)),
+            Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 3, 'type' => Unit::TYPE_JUGGERNAUT)),
+            Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 4, 'type' => Unit::TYPE_JUGGERNAUT)),
+            Action::create(Action::TYPE_PLACE, $opponent, $game, array('row' => 7, 'column' => 5, 'type' => Unit::TYPE_MINOTAUR)),
         );
 
         array_walk($actions, function (Action $action) {
@@ -235,6 +239,7 @@ class Game
                         'user_id' => $unit->getUser()->getId(),
                         'row' => $unit->getRow(),
                         'column' => $unit->getColumn(),
+                        'type' => $unit->getType(),
                         'max_life' => $unit->getMaxLife(),
                         'life' => $unit->getLife(),
                         'move_range' => $unit->getMoveRange(),

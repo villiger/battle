@@ -213,8 +213,9 @@ class PlaceAction extends Action
     {
         $row = (int) $this->payload["row"];
         $column = (int) $this->payload["column"];
+        $type = (int) $this->payload["type"];
 
-        return $this->game->getField()->createUnit($this->user, $row, $column);
+        return $this->game->getField()->createUnit($this->user, $row, $column, $type);
     }
 }
 
