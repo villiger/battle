@@ -4,7 +4,7 @@
 
 "use strict";
 
-function Path(fromRow, fromColumn, toRow, toColumn) {
+function Path(fromRow, fromColumn, toRow, toColumn, ignoreObstacles) {
     this.fromRow = fromRow;
     this.fromColumn = fromColumn;
     this.toRow = toRow;
@@ -25,7 +25,7 @@ function Path(fromRow, fromColumn, toRow, toColumn) {
             if (row == fromRow && column == fromColumn) {
                 this.field[row][column] = "from";
             } else {
-                this.field[row][column] = Game.Field.getTileInfo(row, column);
+                this.field[row][column] = ignoreObstacles ? Game.Field.INFO_FREE : Game.Field.getTileInfo(row, column);
             }
 
             this.path[row][column] = -1;
@@ -34,78 +34,22 @@ function Path(fromRow, fromColumn, toRow, toColumn) {
 }
 
 Path.prototype.calculate = function(maxRange) {
+    // no path if start and end position is the same
     if (this.fromRow == this.toRow && this.fromColumn == this.toColumn) {
         return [];
     }
 
-    var counter = 0;
-    var lastPoints = [{
-        row: this.toRow,
-        column: this.toColumn
-    }];
-
-    this.path[this.toRow][this.toColumn] = 0;
-
-    while (counter < maxRange) {
-        counter++;
-        var currentPoints = [];
-
-        for (var i in lastPoints) {
-            var point = lastPoints[i];
-            var row = point.row;
-            var column = point.column;
-
-            this.tryMarkTile(currentPoints, row - 1, column, counter);
-            this.tryMarkTile(currentPoints, row + 1, column, counter);
-            this.tryMarkTile(currentPoints, row, column - 1, counter);
-            this.tryMarkTile(currentPoints, row, column + 1, counter);
-        }
-
-        lastPoints = currentPoints;
+    // no path if click on "my" units
+    if (this.field[this.toRow][this.toColumn] == "my") {
+        return [];
     }
 
-    var result = [];
-    var currentPosition = {
-        row: this.fromRow,
-        column: this.fromColumn
-    };
-    var checkThat = [
-        { row: -1, column: 0 },
-        { row: +1, column: 0 },
-        { row: 0, column: -1 },
-        { row: 0, column: +1 }
-    ];
+    this._createPathMap(maxRange);
 
-    for (var step = 0; step < maxRange; step++) {
-        var lowest = Infinity;
-        var lowestPos = {};
-
-        for (var j = 0; j < checkThat.length; j++) {
-            var current = this.getNumberFromPath(currentPosition.row + checkThat[j].row, currentPosition.column + checkThat[j].column);
-            if (current < lowest) {
-                lowest = current;
-                lowestPos = {
-                    row: currentPosition.row + checkThat[j].row,
-                    column: currentPosition.column + checkThat[j].column
-                };
-            }
-        }
-
-        currentPosition = lowestPos;
-
-
-        var fieldInfo = Game.Field.getTileInfo(currentPosition.row, currentPosition.column);
-        if (fieldInfo == Game.Field.INFO_FREE) {
-            result.push(lowestPos);
-        }
-
-        if (lowest == 0) return result;
-    }
-
-    return [];
+    return this._findPath(maxRange);
 };
 
-Path.prototype.tryMarkTile = function(pointsArray, row, column, counter) {
+Path.prototype._tryMarkTile = function(pointsArray, row, column, counter) {
     if (row < 0 || row >= Game.Field.height) {
         return false;
     } else if (column < 0 || column >= Game.Field.width) {
@@ -124,7 +68,7 @@ Path.prototype.tryMarkTile = function(pointsArray, row, column, counter) {
     return false;
 };
 
-Path.prototype.getNumberFromPath = function(row, column) {
+Path.prototype._getNumberFromPath = function(row, column) {
     if (row < 0 || row >= Game.Field.height) {
         return Infinity;
     } else if (column < 0 || column >= Game.Field.width) {
@@ -134,4 +78,76 @@ Path.prototype.getNumberFromPath = function(row, column) {
     } else {
         return this.path[row][column];
     }
-}
+};
+
+Path.prototype._createPathMap = function(maxRange) {
+    var counter = 0;
+    var lastPoints = [{
+        row: this.toRow,
+        column: this.toColumn
+    }];
+
+    this.path[this.toRow][this.toColumn] = 0;
+
+    while (counter < maxRange) {
+        counter++;
+        var currentPoints = [];
+
+        for (var i in lastPoints) {
+            var point = lastPoints[i];
+            var row = point.row;
+            var column = point.column;
+
+            this._tryMarkTile(currentPoints, row - 1, column, counter);
+            this._tryMarkTile(currentPoints, row + 1, column, counter);
+            this._tryMarkTile(currentPoints, row, column - 1, counter);
+            this._tryMarkTile(currentPoints, row, column + 1, counter);
+        }
+
+        lastPoints = currentPoints;
+    }
+};
+
+Path.prototype._findPath = function(maxRange) {
+    var result = [];
+    var currentPosition = {
+        row: this.fromRow,
+        column: this.fromColumn
+    };
+    var checkThat = [
+        { row: -1, column: 0 },
+        { row: +1, column: 0 },
+        { row: 0, column: -1 },
+        { row: 0, column: +1 }
+    ];
+
+    for (var step = 0; step < maxRange; step++) {
+        var lowest = Infinity;
+        var lowestPos = null;
+
+        for (var j = 0; j < checkThat.length; j++) {
+            var current = this._getNumberFromPath(currentPosition.row + checkThat[j].row, currentPosition.column + checkThat[j].column);
+            if (current < lowest) {
+                lowest = current;
+                lowestPos = {
+                    row: currentPosition.row + checkThat[j].row,
+                    column: currentPosition.column + checkThat[j].column
+                };
+            }
+        }
+
+        if (lowestPos) {
+            currentPosition = lowestPos;
+
+            var fieldInfo = Game.Field.getTileInfo(currentPosition.row, currentPosition.column);
+            if (fieldInfo == Game.Field.INFO_FREE) {
+                result.push(lowestPos);
+            }
+        }
+
+
+        if (lowest == 0) return result;
+    }
+
+    return [];
+};

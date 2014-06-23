@@ -8,6 +8,7 @@ var Game = {
     id: null,
     userId: null,
     selection: null,
+    currentPath: [],
     mouseRow: -1,
     mouseColumn: -1,
     images: {},
@@ -79,16 +80,16 @@ var Game = {
             this.selection = null;
             this.Field.selectedUnit = null;
         } else {
-            this.selection = selection;
-
             var unit = this.Field.getUnitByPosition(row, column);
             if (unit) {
                 if (this.Field.selectedUnit && unit.user_id != this.userId) {
                     this.Action.Creators.attack(this.Field.selectedUnit, unit);
-
-                    this.Field.selectedUnit = null;
-                } else {
+                } else if (unit.user_id == this.userId) {
                     this.Field.selectedUnit = unit;
+                    this.selection = selection;
+                } else {
+                    this.Field.selectedUnit = null;
+                    this.selection = null;
                 }
             } else {
                 if (this.Field.selectedUnit) {
@@ -109,22 +110,27 @@ var Game = {
             this.mouseRow = row;
             this.mouseColumn = column;
 
-            this.draw();
+            var fromUnit = this.Field.selectedUnit;
 
-            var unit = this.Field.selectedUnit;
-
-            if (unit && unit.user_id == this.userId && ! (unit.has_moved || unit.has_attacked)) {
+            if (fromUnit && fromUnit.user_id == this.userId && ! (fromUnit.has_moved || fromUnit.has_attacked)) {
                 var sourceRow = this.Field.selectedUnit.row;
                 var sourceColumn = this.Field.selectedUnit.column;
 
+                var toUnit = this.Field.getUnitByPosition(row, column);
+                var mouseOverTarget = toUnit && toUnit.user_id != Game.userId;
+
                 var path = new Path(sourceRow, sourceColumn, row, column);
-                var result = path.calculate(this.Field.selectedUnit.move_range + 10);
+                var result = path.calculate(fromUnit.move_range);
+
+                this.draw();
 
                 if (result.length > 0) {
-                    for (var i = 0; i < result.length; i++) {
+                    for (var i = result.length - 1; i >= 0; i--) {
                         Util.Canvas.drawTile(this.images.ui, 0, 1, result[i].row, result[i].column);
                     }
                 }
+
+                this.currentPath = result;
             }
         }
     },
@@ -376,6 +382,10 @@ var Game = {
 
                 unit.has_moved = true;
 
+                Game.selection = {
+                    row: row,
+                    column: column
+                };
                 Game.draw();
             },
 
@@ -409,6 +419,8 @@ var Game = {
                         }
                     }
 
+                    Game.selection = null;
+                    Game.Field.selectedUnit = null;
                     Game.draw();
                 }
             },
