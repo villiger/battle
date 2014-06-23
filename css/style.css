@@ -10,6 +10,9 @@ body {
   padding: 50px 0;
   color: black;
 }
+.welcome .title-screen {
+  width: 440px;
+}
 .friends,
 .games {
   margin: 0;
